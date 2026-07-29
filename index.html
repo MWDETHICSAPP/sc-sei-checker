@@ -21,7 +21,7 @@
   <main>
     <section class="card hero">
       <h2>Check a spreadsheet of officials</h2>
-      <p>Import Excel, normalize names, flag uncertain matches for manual review, and export a completed workbook.</p>
+      <p>Import Excel, send public names and jurisdictions to the SEI checking service, review the results, and export a completed workbook.</p>
       <label class="upload">
         <span>Choose Excel file</span>
         <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
@@ -42,7 +42,7 @@
         <label for="yearInput">Filing year</label>
         <input id="yearInput" type="number" value="2026" min="2000" max="2100" />
       </div>
-      <button id="prepareBtn">Prepare checks</button>
+      <button id="prepareBtn">Run checks</button>
     </section>
 
     <section class="stats" id="stats" hidden>
