@@ -1,100 +1,54 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-
 const { checkPerson } = require("./services/checkPerson");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
+const PORT = Number(process.env.PORT || 3000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
   "https://mwdethicsapp.github.io,http://localhost:8000,http://localhost:3000")
-  .split(",")
-  .map((value) => value.trim())
-  .filter(Boolean);
+  .split(",").map(v => v.trim()).filter(Boolean);
 
+app.disable("x-powered-by");
 app.use(helmet());
-app.use(
-  cors({
-    origin(origin, callback) {
-      // Permit tools such as health checks that send no Origin header.
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error("Origin is not allowed by CORS."));
-    },
-  })
-);
 app.use(express.json({ limit: "1mb" }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin not allowed: ${origin}`));
+  },
+  methods: ["GET","POST","OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
 
-app.get("/", (_req, res) => {
-  res.json({
-    name: "SC SEI Checker API",
-    version: "0.1.0",
-    status: "running",
-  });
-});
-
-app.get("/health", (_req, res) => {
-  res.json({
-    ok: true,
-    service: "sc-sei-checker-backend",
-    timestamp: new Date().toISOString(),
-  });
-});
+app.get("/", (_req, res) => res.json({name:"SC SEI Checker API",version:"0.2.0",status:"running"}));
+app.get("/health", (_req, res) => res.status(200).json({
+  ok:true, service:"sc-sei-checker-backend", version:"0.2.0", timestamp:new Date().toISOString()
+}));
 
 app.post("/check-person", async (req, res, next) => {
-  try {
-    const result = await checkPerson(req.body);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
+  try { res.json(await checkPerson(req.body)); } catch (e) { next(e); }
 });
 
 app.post("/check-batch", async (req, res, next) => {
   try {
     const { people, year = 2026 } = req.body || {};
-
     if (!Array.isArray(people) || people.length === 0) {
-      return res.status(400).json({
-        error: "The request must include a non-empty people array.",
-      });
+      return res.status(400).json({error:"The request must include a non-empty people array."});
     }
-
     if (people.length > 500) {
-      return res.status(400).json({
-        error: "A batch may contain no more than 500 people.",
-      });
+      return res.status(400).json({error:"A batch may contain no more than 500 people."});
     }
-
     const results = [];
-    for (const person of people) {
-      results.push(await checkPerson({ ...person, year: person.year || year }));
-    }
-
-    res.json({
-      year,
-      count: results.length,
-      results,
-    });
-  } catch (error) {
-    next(error);
-  }
+    for (const person of people) results.push(await checkPerson({...person, year: person.year || year}));
+    res.json({year:Number(year), count:results.length, results});
+  } catch (e) { next(e); }
 });
 
 app.use((error, _req, res, _next) => {
+  const status = Number(error.status || 500);
   console.error(error);
-  res.status(500).json({
-    error: "The server could not complete the request.",
-    detail:
-      process.env.NODE_ENV === "production"
-        ? undefined
-        : error.message,
-  });
+  res.status(status).json({error: status >= 500 ? "The server could not complete the request." : error.message});
 });
 
-app.listen(PORT, () => {
-  console.log(`SC SEI Checker API listening on port ${PORT}`);
-});
+app.listen(PORT, "0.0.0.0", () => console.log(`SC SEI Checker API listening on port ${PORT}`));
