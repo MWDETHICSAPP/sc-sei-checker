@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="South Carolina State Ethics Commission SEI Verification Portal"
+  />
+
+  <title>SEI Verification Portal</title>
+
+  <style>
+    :root {
+      --navy: #102a43;
+      --navy-dark: #071b2d;
+      --green: #1f6f50;
+      --green-dark: #15583e;
+      --gold: #c8a24d;
+      --background: #f3f6f8;
+      --surface: #ffffff;
+      --text: #1d2a35;
+      --muted: #667784;
+      --border: #dce4e9;
+      --success: #18794e;
+      --shadow: 0 12px 30px rgba(20, 42, 60, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--background);
+      color: var(--text);
+      font-family:
+        Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background:
+        linear-gradient(
+          180deg,
+          var(--navy-dark) 0%,
+          var(--navy) 65%,
+          #153c56 100%
+        );
+      color: white;
+      padding: 28px 20px;
+    }
+
+    .agency-mark {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 0 8px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .seal-placeholder {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .agency-name {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-label {
+      margin: 28px 10px 10px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 13px 14px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.82);
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+    }
+
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px 10px 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .main-content {
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 78px;
+      padding: 0 42px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-title {
+      margin: 0;
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 750;
+    }
+
+    .environment-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #c9e4d7;
+      border-radius: 999px;
+      background: #f1fbf6;
+      color: var(--success);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 4px rgba(24, 121, 78, 0.12);
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 42px;
+    }
+
+    .welcome-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+      padding: 34px;
+      border-radius: 16px;
+      background:
+        linear-gradient(120deg, var(--navy) 0%, #174963 100%);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #d9c184;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .welcome-panel h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.12;
+    }
+
+    .welcome-copy {
+      max-width: 690px;
+      margin: 13px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .primary-button {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--gold);
+      color: #17212a;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .primary-button:hover {
+      filter: brightness(1.06);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 38px 0 18px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 22px;
+    }
+
+    .section-heading p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .action-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 205px;
+      padding: 26px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: inherit;
+      transition:
+        transform 150ms ease,
+        box-shadow 150ms ease,
+        border-color 150ms ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-3px);
+      border-color: #aac6b9;
+      box-shadow: 0 16px 34px rgba(20, 42, 60, 0.12);
+    }
+
+    .action-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 22px;
+      border-radius: 12px;
+      background: #eaf4ef;
+      color: var(--green);
+      font-size: 23px;
+    }
+
+    .action-card h3 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 19px;
+    }
+
+    .action-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .card-link {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .status-symbol {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      border-radius: 50%;
+      background: #eaf7f0;
+      color: var(--success);
+      font-weight: 900;
+    }
+
+    .status-card strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .status-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .notice {
+      margin-top: 28px;
+      padding: 17px 20px;
+      border-left: 4px solid var(--gold);
+      border-radius: 6px;
+      background: #fffaf0;
+      color: #665224;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .topbar {
+        padding: 0 22px;
+      }
+
+      .page {
+        padding: 24px 18px 40px;
+      }
+
+      .welcome-panel {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 28px 24px;
+      }
+
+      .action-grid,
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .topbar-title {
+        font-size: 16px;
+      }
+
+      .environment-badge {
+        padding: 7px 9px;
+        font-size: 11px;
+      }
+
+      .welcome-panel h1 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="agency-mark">
+        <div class="seal-placeholder">SC</div>
+
+        <p class="agency-name">
+          South Carolina<br />
+          State Ethics Commission
+        </p>
+      </div>
+
+      <p class="nav-label">Workspace</p>
+
+      <nav class="nav-list" aria-label="Primary navigation">
+        <a class="nav-item active" href="#">
+          <span class="nav-icon">⌂</span>
+          <span>Dashboard</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <span class="nav-icon">⌕</span>
+          <span>Single Verification</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <span class="nav-icon">⇧</span>
+          <span>Batch Verification</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <span class="nav-icon">▤</span>
+          <span>Previous Jobs</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <span class="nav-icon">⚙</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        Internal Commission System<br />
+        Version 0.2.0
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">SEI Verification Portal</h2>
+
+        <div class="environment-badge">
+          <span class="status-dot"></span>
+          API Online
+        </div>
+      </header>
+
+      <div class="page">
+        <section class="welcome-panel">
+          <div>
+            <p class="eyebrow">Verification workspace</p>
+
+            <h1>Statement of Economic Interests Review</h1>
+
+            <p class="welcome-copy">
+              Search individual filing records or process an Excel workbook
+              containing multiple public officials.
+            </p>
+          </div>
+
+          <a class="primary-button" href="#">
+            Start Verification
+          </a>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Choose a workflow</h2>
+            <p>Select the type of filing review you need to complete.</p>
+          </div>
+        </div>
+
+        <section class="action-grid">
+          <a class="action-card" href="#">
+            <div class="action-icon">⌕</div>
+
+            <h3>Single Verification</h3>
+
+            <p>
+              Search for one official using a name, county, jurisdiction,
+              board, commission, or council.
+            </p>
+
+            <span class="card-link">Open search →</span>
+          </a>
+
+          <a class="action-card" href="#">
+            <div class="action-icon">⇧</div>
+
+            <h3>Batch Verification</h3>
+
+            <p>
+              Upload an Excel workbook, verify multiple records, review
+              uncertain matches, and export the completed results.
+            </p>
+
+            <span class="card-link">Upload workbook →</span>
+          </a>
+
+          <a class="action-card" href="#">
+            <div class="action-icon">▤</div>
+
+            <h3>Previous Jobs</h3>
+
+            <p>
+              Review earlier verification jobs, processing dates, status
+              summaries, and exported workbooks.
+            </p>
+
+            <span class="card-link">View jobs →</span>
+          </a>
+
+          <a class="action-card" href="#">
+            <div class="action-icon">⚙</div>
+
+            <h3>Matching Settings</h3>
+
+            <p>
+              Manage county, jurisdiction, surname, nickname, middle-initial,
+              and manual-review matching rules.
+            </p>
+
+            <span class="card-link">View settings →</span>
+          </a>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>System status</h2>
+            <p>Current availability of the application components.</p>
+          </div>
+        </div>
+
+        <section class="status-grid">
+          <div class="status-card">
+            <div class="status-symbol">✓</div>
+            <div>
+              <strong>Frontend</strong>
+              <span>Interface available</span>
+            </div>
+          </div>
+
+          <div class="status-card">
+            <div class="status-symbol">✓</div>
+            <div>
+              <strong>Render API</strong>
+              <span>Backend service running</span>
+            </div>
+          </div>
+
+          <div class="status-card">
+            <div class="status-symbol">✓</div>
+            <div>
+              <strong>Verification Engine</strong>
+              <span>Ready for integration</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="notice">
+          This system is intended for internal filing-verification assistance.
+          Uncertain or incomplete matches should be placed in manual review
+          rather than treated as a confirmed failure to file.
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
