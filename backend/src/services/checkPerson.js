@@ -108,7 +108,7 @@ function jurisdictionVariants(jurisdiction) {
 
   return [...variants].filter(Boolean);
 } 
-}
+
 
 function findPositionInfo(positions, jurisdiction) {
    const variants = jurisdictionVariants(jurisdiction);
@@ -143,7 +143,7 @@ function findPositionInfo(positions, jurisdiction) {
 
   return null;
 }
-}
+
 
 
 async function searchPublicSei({
@@ -189,6 +189,7 @@ async function searchPublicSei({
     typeId: positionInfo.typeId
   },
   reportYear: Number(year)
+}),
 }),
 
   if (!response.ok) {
