@@ -137,46 +137,69 @@ $('prepareBtn').addEventListener('click', async () => {
 });
 
 async function runBackendChecks(year) {
-  const people = preparedRows.map((row) => ({
-    name: row.__name,
-    jurisdiction: row.__jurisdiction,
-    year
-  }));
+  const batchSize = 250;
+  const totalBatches = Math.ceil(preparedRows.length / batchSize);
+  const button = $('prepareBtn');
 
-  const response = await fetch(`${API_BASE_URL}/check-batch`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ people, year })
-  });
+  for (let start = 0; start < preparedRows.length; start += batchSize) {
+    const batchNumber = Math.floor(start / batchSize) + 1;
+    const batchRows = preparedRows.slice(start, start + batchSize);
 
-  let payload;
-  try {
-    payload = await response.json();
-  } catch (_) {
-    throw new Error(`The server returned an unreadable response (${response.status}).`);
+    button.textContent = `Checking batch ${batchNumber} of ${totalBatches}…`;
+
+    const people = batchRows.map((row) => ({
+      name: row.__name,
+      jurisdiction: row.__jurisdiction,
+      year
+    }));
+
+    const response = await fetch(`${API_BASE_URL}/check-batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ people, year })
+    });
+
+    let payload;
+
+    try {
+      payload = await response.json();
+    } catch (_) {
+      throw new Error(
+        `The server returned an unreadable response for batch ${batchNumber} (${response.status}).`
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        payload.error ||
+          `The server returned status ${response.status} for batch ${batchNumber}.`
+      );
+    }
+
+    if (
+      !Array.isArray(payload.results) ||
+      payload.results.length !== batchRows.length
+    ) {
+      throw new Error(
+        `The server returned an incomplete response for batch ${batchNumber}.`
+      );
+    }
+
+    payload.results.forEach((result, index) => {
+      const row = preparedRows[start + index];
+
+      row.__status = result.status || 'Manual Review';
+      row.__surname = result.search?.surname || row.__surname;
+      row.__matchedName = result.matchedFilingName || '';
+      row.__notes = result.notes || '';
+    });
+
+    renderRows(preparedRows);
+    updateStats();
+    persist();
   }
-
-  if (!response.ok) {
-    throw new Error(payload.error || `The server returned status ${response.status}.`);
-  }
-
-  if (!Array.isArray(payload.results) || payload.results.length !== preparedRows.length) {
-    throw new Error('The server returned an incomplete batch.');
-  }
-
-  payload.results.forEach((result, index) => {
-    const row = preparedRows[index];
-    row.__status = result.status || 'Manual Review';
-    row.__surname = result.search?.surname || row.__surname;
-    row.__matchedName = result.matchedFilingName || '';
-    row.__notes = result.notes || '';
-  });
-
-  renderRows(preparedRows);
-  updateStats();
-  persist();
 }
 
 function renderRows(rows) {
