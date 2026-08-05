@@ -300,6 +300,7 @@ async function checkPerson(input) {
         match.percentageAccuracy || 1
       ),
       matchedFilingName: match.filerName || "",
+      filedDate: match.updated || "",
       filingUrl: buildFilingUrl(),
       notes:
         `${match.report || `${year} SEI Report`} — ` +
