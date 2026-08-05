@@ -1,13 +1,18 @@
-const { normalizePersonInput, extractSurname } = require("../matching/names");
+const {
+  normalizePersonInput,
+  extractSurname
+} = require("../matching/names");
 
-const SEARCH_URL =
-  "https://ethicsfiling.sc.gov/api/EthicsPublicSearch/For/Sei/Reports";
+const POSITIONS_URL =
+  "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/All/Offices/Positions";
 
-function buildFilingUrl(match) {
-  // We do not yet have personId from the search response, so link to
-  // the public SEI search page rather than inventing a broken detail URL.
-  return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
-}
+const REPORTS_URL =
+  "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Search/For/Sei/Reports";
+
+let positionsCache = null;
+let positionsCacheTime = 0;
+
+const CACHE_DURATION_MS = 6 * 60 * 60 * 1000;
 
 function normalizeText(value) {
   return String(value || "")
@@ -17,50 +22,160 @@ function normalizeText(value) {
     .replace(/\s+/g, " ");
 }
 
-function jurisdictionMatches(match, jurisdiction) {
-  const wanted = normalizeText(jurisdiction);
-
-  if (!wanted) return true;
-
-  const searchable = normalizeText(
-    `${match.officeName || ""} ${match.officeType || ""} ${match.position || ""}`
-  );
-
-  return searchable.includes(wanted);
+function buildFilingUrl() {
+  return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
 }
 
-async function searchPublicSei({ surname, jurisdiction, year }) {
-  const response = await fetch(SEARCH_URL, {
+async function getPositions() {
+  const now = Date.now();
+
+  if (
+    Array.isArray(positionsCache) &&
+    now - positionsCacheTime < CACHE_DURATION_MS
+  ) {
+    return positionsCache;
+  }
+
+  const response = await fetch(POSITIONS_URL, {
+    headers: {
+      Accept: "application/json",
+      Referer:
+        "https://ethicsfiling.sc.gov/public/statement-economic-interests",
+      Origin: "https://ethicsfiling.sc.gov",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
+    }
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+
+    console.error("POSITIONS API STATUS:", response.status);
+    console.error("POSITIONS API BODY:", body);
+
+    const error = new Error(
+      `The positions lookup returned status ${response.status}.`
+    );
+
+    error.status = 502;
+    throw error;
+  }
+
+  const payload = await response.json();
+
+  if (!Array.isArray(payload)) {
+    const error = new Error(
+      "The positions lookup returned an unexpected response."
+    );
+
+    error.status = 502;
+    throw error;
+  }
+
+  positionsCache = payload;
+  positionsCacheTime = now;
+
+  return positionsCache;
+}
+
+function findPositionInfo(positions, jurisdiction) {
+  const wanted = normalizeText(jurisdiction);
+
+  if (!wanted) {
+    return null;
+  }
+
+  const exactGovernmentEntity = positions.find(
+    (position) =>
+      position.type === "Government Entity" &&
+      normalizeText(position.name) === wanted
+  );
+
+  if (exactGovernmentEntity) {
+    return exactGovernmentEntity;
+  }
+
+  const exactAnyType = positions.find(
+    (position) => normalizeText(position.name) === wanted
+  );
+
+  if (exactAnyType) {
+    return exactAnyType;
+  }
+
+  const partialGovernmentEntity = positions.find(
+    (position) =>
+      position.type === "Government Entity" &&
+      (normalizeText(position.name).includes(wanted) ||
+        wanted.includes(normalizeText(position.name)))
+  );
+
+  return partialGovernmentEntity || null;
+}
+
+async function searchPublicSei({
+  surname,
+  jurisdiction,
+  year
+}) {
+  const positions = await getPositions();
+
+  const positionInfo = findPositionInfo(
+    positions,
+    jurisdiction
+  );
+
+  if (!positionInfo) {
+    return {
+      matches: [],
+      positionInfo: null,
+      positionLookupFailed: true
+    };
+  }
+
+  const response = await fetch(REPORTS_URL, {
     method: "POST",
     headers: {
       Accept: "application/json",
+      "Accept-Language": "en-US,en;q=0.9",
       "Content-Type": "application/json;charset=UTF-8",
-      "User-Agent": "SC-SEI-Checker/0.3"
+      Origin: "https://ethicsfiling.sc.gov",
+      Referer:
+        "https://ethicsfiling.sc.gov/public/statement-economic-interests",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
     },
     body: JSON.stringify({
-      filerName: surname,
-      positionSearch: jurisdiction || "",
+      filerName: surname.toLowerCase(),
+      positionSearch: jurisdiction,
+      positionInfo,
       reportYear: Number(year)
     })
   });
 
   if (!response.ok) {
-  const body = await response.text();
+    const body = await response.text();
 
-  console.error("ETHICS API STATUS:", response.status);
-  console.error("ETHICS API BODY:", body);
+    console.error("ETHICS API STATUS:", response.status);
+    console.error("ETHICS API BODY:", body);
 
-  const error = new Error(
-    `The public SEI search returned status ${response.status}: ${body}`
-  );
+    const error = new Error(
+      `The public SEI search returned status ${response.status}.`
+    );
 
-  error.status = 502;
-  throw error;
-}
+    error.status = 502;
+    throw error;
+  }
 
   const payload = await response.json();
 
-  return Array.isArray(payload.result) ? payload.result : [];
+  return {
+    matches: Array.isArray(payload.result)
+      ? payload.result
+      : [],
+    positionInfo,
+    positionLookupFailed: false
+  };
 }
 
 async function checkPerson(input) {
@@ -78,7 +193,10 @@ async function checkPerson(input) {
   if (!surname) {
     return {
       input: normalized,
-      search: { surname: "", adapter: "sc-ethics-public-api" },
+      search: {
+        surname: "",
+        adapter: "sc-ethics-public-api"
+      },
       status: "Manual Review",
       confidence: 0,
       matchedFilingName: "",
@@ -87,59 +205,91 @@ async function checkPerson(input) {
     };
   }
 
-  const matches = await searchPublicSei({
+  const searchResult = await searchPublicSei({
     surname,
     jurisdiction: normalized.jurisdiction,
     year
   });
 
+  if (searchResult.positionLookupFailed) {
+    return {
+      input: normalized,
+      search: {
+        surname,
+        adapter: "sc-ethics-public-api"
+      },
+      status: "Manual Review",
+      confidence: 0,
+      matchedFilingName: "",
+      filingUrl: "",
+      notes:
+        `The jurisdiction "${normalized.jurisdiction}" ` +
+        "could not be matched to the Ethics filing system."
+    };
+  }
+
+  const matches = searchResult.matches;
+
   if (matches.length === 0) {
     return {
       input: normalized,
-      search: { surname, adapter: "sc-ethics-public-api" },
+      search: {
+        surname,
+        adapter: "sc-ethics-public-api"
+      },
       status: "Not Filed",
       confidence: 1,
       matchedFilingName: "",
       filingUrl: "",
-      notes: `No ${year} SEI search result was found for ${surname} in ${normalized.jurisdiction || "the selected jurisdiction"}.`
+      notes:
+        `No ${year} SEI result was found for ${surname} ` +
+        `in ${normalized.jurisdiction}.`
     };
   }
 
-  const jurisdictionMatchesOnly = matches.filter((match) =>
-    jurisdictionMatches(match, normalized.jurisdiction)
-  );
-
-  const candidates =
-    jurisdictionMatchesOnly.length > 0 ? jurisdictionMatchesOnly : matches;
-
-  if (candidates.length === 1) {
-    const match = candidates[0];
+  if (matches.length === 1) {
+    const match = matches[0];
 
     return {
       input: normalized,
-      search: { surname, adapter: "sc-ethics-public-api" },
+      search: {
+        surname,
+        adapter: "sc-ethics-public-api"
+      },
       status: "Filed",
-      confidence: Number(match.percentageAccuracy || 1),
+      confidence: Number(
+        match.percentageAccuracy || 1
+      ),
       matchedFilingName: match.filerName || "",
-      filingUrl: buildFilingUrl(match),
-      notes: `${match.report || `${year} SEI Report`} — ${match.officeName || "office not listed"}; updated ${match.updated || "date unavailable"}.`
+      filingUrl: buildFilingUrl(),
+      notes:
+        `${match.report || `${year} SEI Report`} — ` +
+        `${match.officeName || "office not listed"}; ` +
+        `updated ${match.updated || "date unavailable"}.`
     };
   }
 
   return {
     input: normalized,
-    search: { surname, adapter: "sc-ethics-public-api" },
+    search: {
+      surname,
+      adapter: "sc-ethics-public-api"
+    },
     status: "Manual Review",
     confidence: Math.max(
-      ...candidates.map((match) => Number(match.percentageAccuracy || 0))
+      ...matches.map((match) =>
+        Number(match.percentageAccuracy || 0)
+      )
     ),
-    matchedFilingName: candidates
+    matchedFilingName: matches
       .slice(0, 3)
       .map((match) => match.filerName)
       .filter(Boolean)
       .join("; "),
-    filingUrl: buildFilingUrl(candidates[0]),
-    notes: `${candidates.length} possible ${year} filing matches were found. Confirm the filer and jurisdiction manually.`
+    filingUrl: buildFilingUrl(),
+    notes:
+      `${matches.length} possible ${year} filing matches ` +
+      "were found. Confirm the filer manually."
   };
 }
 
