@@ -193,6 +193,7 @@ async function runBackendChecks(year) {
       row.__status = result.status || 'Manual Review';
       row.__surname = result.search?.surname || row.__surname;
       row.__matchedName = result.matchedFilingName || '';
+      row.__filedDate = result.filedDate || '';
       row.__notes = result.notes || '';
     });
 
@@ -282,6 +283,7 @@ $('exportBtn').addEventListener('click', () => {
 
     clean[`SEI ${row.__year}`] = row.__status;
     clean['Matched Filing Name'] = row.__matchedName;
+    clean['SEI Filed / Updated Date'] = row.__filedDate || '';
     clean['SEI Match Notes'] = row.__notes;
     clean['SEI Search Surname'] = row.__surname;
     return clean;
