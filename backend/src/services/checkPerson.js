@@ -78,40 +78,73 @@ async function getPositions() {
   return positionsCache;
 }
 
-function findPositionInfo(positions, jurisdiction) {
-  const wanted = normalizeText(jurisdiction);
 
-  if (!wanted) {
+
+
+function jurisdictionVariants(jurisdiction) {
+  const original = normalizeText(jurisdiction);
+
+  const variants = new Set([original]);
+
+  const removablePrefixes = [
+    "city of ",
+    "town of ",
+    "county of ",
+    "village of ",
+    "municipality of "
+  ];
+
+  for (const prefix of removablePrefixes) {
+    if (original.startsWith(prefix)) {
+      variants.add(original.slice(prefix.length).trim());
+    }
+  }
+
+  if (original.endsWith(" county")) {
+    variants.add(
+      original.slice(0, -" county".length).trim()
+    );
+  }
+
+  return [...variants].filter(Boolean);
+} 
+}
+
+function findPositionInfo(positions, jurisdiction) {
+   const variants = jurisdictionVariants(jurisdiction);
+
+  if (variants.length === 0) {
     return null;
   }
 
-  const exactGovernmentEntity = positions.find(
-    (position) =>
-      position.type === "Government Entity" &&
-      normalizeText(position.name) === wanted
-  );
+  for (const wanted of variants) {
+    const exactGovernmentEntity = positions.find(
+      (position) =>
+        position.type === "Government Entity" &&
+        normalizeText(position.name) === wanted
+    );
 
-  if (exactGovernmentEntity) {
-    return exactGovernmentEntity;
+    if (exactGovernmentEntity) {
+      return exactGovernmentEntity;
+    }
   }
 
-  const exactAnyType = positions.find(
-    (position) => normalizeText(position.name) === wanted
-  );
+  for (const wanted of variants) {
+    const exactOffice = positions.find(
+      (position) =>
+        position.type === "Office" &&
+        normalizeText(position.name) === wanted
+    );
 
-  if (exactAnyType) {
-    return exactAnyType;
+    if (exactOffice) {
+      return exactOffice;
+    }
   }
 
-  const partialGovernmentEntity = positions.find(
-    (position) =>
-      position.type === "Government Entity" &&
-      (normalizeText(position.name).includes(wanted) ||
-        wanted.includes(normalizeText(position.name)))
-  );
-
-  return partialGovernmentEntity || null;
+  return null;
 }
+}
+
 
 async function searchPublicSei({
   surname,
@@ -146,12 +179,17 @@ async function searchPublicSei({
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
     },
     body: JSON.stringify({
-      filerName: surname.toLowerCase(),
-      positionSearch: jurisdiction,
-      positionInfo,
-      reportYear: Number(year)
-    })
-  });
+  filerName: surname.toLowerCase(),
+  positionSearch: jurisdiction,
+  positionInfo: {
+    id: positionInfo.id,
+    name: positionInfo.name,
+    nameType: positionInfo.nameType,
+    type: positionInfo.type,
+    typeId: positionInfo.typeId
+  },
+  reportYear: Number(year)
+}),
 
   if (!response.ok) {
     const body = await response.text();
