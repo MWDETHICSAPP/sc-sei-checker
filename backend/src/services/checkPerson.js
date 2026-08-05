@@ -190,7 +190,7 @@ async function searchPublicSei({
   },
   reportYear: Number(year)
 }),
-}),
+});
 
   if (!response.ok) {
     const body = await response.text();
