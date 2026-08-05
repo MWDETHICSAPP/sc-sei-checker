@@ -45,12 +45,18 @@ async function searchPublicSei({ surname, jurisdiction, year }) {
   });
 
   if (!response.ok) {
-    const error = new Error(
-      `The public SEI search returned status ${response.status}.`
-    );
-    error.status = 502;
-    throw error;
-  }
+  const body = await response.text();
+
+  console.error("ETHICS API STATUS:", response.status);
+  console.error("ETHICS API BODY:", body);
+
+  const error = new Error(
+    `The public SEI search returned status ${response.status}: ${body}`
+  );
+
+  error.status = 502;
+  throw error;
+}
 
   const payload = await response.json();
 
