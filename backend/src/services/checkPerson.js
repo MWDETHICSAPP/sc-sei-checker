@@ -221,10 +221,20 @@ async function checkPerson(input) {
   const normalized = normalizePersonInput(input);
 
   if (!normalized.name) {
-    const error = new Error("A name is required.");
-    error.status = 400;
-    throw error;
-  }
+  return {
+    input: normalized,
+    search: {
+      surname: "",
+      adapter: "sc-ethics-public-api"
+    },
+    status: "Manual Review",
+    confidence: 0,
+    matchedFilingName: "",
+    filedDate: "",
+    filingUrl: "",
+    notes: "No official name provided."
+  };
+}
 
   const surname = extractSurname(normalized.name);
   const year = Number(normalized.year || 2026);
