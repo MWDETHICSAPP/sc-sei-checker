@@ -301,6 +301,10 @@ $('exportBtn').addEventListener('click', () => {
     clean['SEI Filed / Updated Date'] = row.__filedDate || '';
     clean['SEI Match Notes'] = row.__notes;
     clean['SEI Search Surname'] = row.__surname;
+    clean['Review Status'] = row.__status;
+clean['Manual Review Required'] = row.__status === 'Manual Review' ? 'Yes' : 'No';
+clean['Letter Required'] = row.__status === 'Not Filed' ? 'Yes' : 'No';
+clean['Staff Notes'] = '';
     return clean;
   });
 
