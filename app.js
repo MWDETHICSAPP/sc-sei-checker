@@ -161,6 +161,7 @@ if (validRows.length === 0) {
   updateStats();
   continue;
 }
+    
 const people = validRows.map((row) => ({
     name: row.__name,
     jurisdiction: row.__jurisdiction,
