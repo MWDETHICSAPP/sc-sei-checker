@@ -147,11 +147,25 @@ async function runBackendChecks(year) {
 
     button.textContent = `Checking batch ${batchNumber} of ${totalBatches}…`;
 
-    const people = batchRows.map((row) => ({
-      name: row.__name,
-      jurisdiction: row.__jurisdiction,
-      year
-    }));
+    const validRows = batchRows.filter((row) => {
+    if (!row.__name || !row.__name.trim()) {
+        row.__status = "Manual Review";
+        row.__notes = "No official name provided.";
+        return false;
+    }
+
+    return true;
+});
+if (validRows.length === 0) {
+  renderRows(preparedRows);
+  updateStats();
+  continue;
+}
+const people = validRows.map((row) => ({
+    name: row.__name,
+    jurisdiction: row.__jurisdiction,
+    year
+}));
 
     const response = await fetch(`${API_BASE_URL}/check-batch`, {
       method: 'POST',
@@ -180,7 +194,7 @@ async function runBackendChecks(year) {
 
     if (
       !Array.isArray(payload.results) ||
-      payload.results.length !== batchRows.length
+      payload.results.length !== validRows.length
     ) {
       throw new Error(
         `The server returned an incomplete response for batch ${batchNumber}.`
@@ -188,7 +202,7 @@ async function runBackendChecks(year) {
     }
 
     payload.results.forEach((result, index) => {
-      const row = preparedRows[start + index];
+      const row = validRows[index];
 
       row.__status = result.status || 'Manual Review';
       row.__surname = result.search?.surname || row.__surname;
