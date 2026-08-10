@@ -21,3 +21,4 @@ Serve the folder with any static HTTPS-capable host. For development:
     python3 -m http.server 8000
 
 Then open http://localhost:8000 on a computer. For installation on iPad, deploy to an HTTPS host.
+
