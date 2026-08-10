@@ -54,10 +54,19 @@
 
     <section class="card" id="resultsCard" hidden>
       <div class="toolbar">
-        <input id="filterInput" type="search" placeholder="Filter names or jurisdictions" />
-        <button id="exportBtn" class="secondary">Export Excel</button>
-        <button id="generateLettersBtn" class="secondary">Generate Letters</button>
-      </div>
+  <input id="filterInput" type="search" placeholder="Filter names or jurisdictions" />
+
+  <button id="exportBtn" class="secondary">Export Excel</button>
+
+  <select id="letterSigner">
+    <option value="">Leave signature blank</option>
+    <option value="kristin">Kristin S. Nabors — Director of Non-Compliance</option>
+    <option value="mel">Mel Baldwin — Administrative Assistant Non-Compliance</option>
+    <option value="lindsey">Lindsey E. New — Assistant Director - Non-Compliance</option>
+  </select>
+
+  <button id="generateLettersBtn" class="secondary">Generate Letters</button>
+</div>
       <div class="tableWrap">
         <table>
           <thead>
