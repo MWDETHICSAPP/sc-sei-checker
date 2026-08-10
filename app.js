@@ -465,3 +465,54 @@ Sincerely,
 </body>
 </html>`;
 }
+const generateLettersBtn = $('generateLettersBtn');
+
+if (generateLettersBtn) {
+  generateLettersBtn.addEventListener('click', () => {
+    const letterRows = preparedRows.filter(
+      (row) => row.__status === 'Not Filed'
+    );
+
+    if (!letterRows.length) {
+      alert('There are no Not Filed records requiring letters.');
+      return;
+    }
+
+    letterRows.forEach((row, index) => {
+      const html = buildAnnualSeiLetterDraft(row);
+
+      const recipientName =
+        row.Name ||
+        row['Full Name'] ||
+        row['Official Name'] ||
+        row['Last Name'] ||
+        `Recipient_${index + 1}`;
+
+      const safeName = String(recipientName)
+        .trim()
+        .replace(/[^a-z0-9]+/gi, '_')
+        .replace(/^_+|_+$/g, '');
+
+      const year = row.__year || new Date().getFullYear();
+      const blob = new Blob([html], {
+        type: 'text/html;charset=utf-8'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `${safeName || 'SEI_Recipient'}_${year}_SEI_Letter.html`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    alert(
+      `${letterRows.length} letter draft${letterRows.length === 1 ? '' : 's'} generated.`
+    );
+  });
+}
