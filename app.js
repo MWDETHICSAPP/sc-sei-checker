@@ -357,15 +357,18 @@ function downloadBlob(blob, fileName) {
 const LETTER_SIGNERS = {
   kristin: {
     name: 'Kristin S. Nabors',
-    title: 'Director of Non-Compliance'
+    titleLine1: 'Director of Non-Compliance',
+    titleLine2: ''
   },
   mel: {
     name: 'Mel Baldwin',
-    title: 'Administrative Assistant Non-Compliance'
+    titleLine1: 'Administrative Assistant',
+    titleLine2: 'Non-Compliance'
   },
   lindsey: {
     name: 'Lindsey E. New',
-    title: 'Assistant Director - Non-Compliance'
+    titleLine1: 'Assistant Director - Non-Compliance',
+    titleLine2: ''
   }
 };
 
@@ -621,9 +624,14 @@ const body = (text) =>
 
           blank(),
 
-          normal('Sincerely,', { after: 80 }),
+          normal('Sincerely,', { after: 0 }),
+blank(),
+blank(),
 normal(selectedSigner.name || '[SIGNATURE]', { after: 0 }),
-normal(selectedSigner.title || '[TITLE]', { after: 0 })
+normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0 }),
+...(selectedSigner.titleLine2
+  ? [normal(selectedSigner.titleLine2, { after: 0 })]
+  : []),
         ]
       }
     ]
