@@ -323,3 +323,145 @@ function persist() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js');
 }
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function buildAnnualSeiLetterDraft(row) {
+  const filingYear = row.__year || new Date().getFullYear();
+  const recipientName =
+    row.Name ||
+    row['Full Name'] ||
+    row['Official Name'] ||
+    row['Last Name'] ||
+    '';
+
+  const municipality =
+    row.Municipality ||
+    row.Jurisdiction ||
+    row['County / Jurisdiction'] ||
+    '';
+
+  const letterDate = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  const dueDate = '[DUE DATE]';
+  const address = '[ADDRESS]';
+  const cityStateZip = '[CITY, STATE ZIP]';
+  const salutation = '[MR./MS./MRS. LAST NAME]';
+  const position = '[POSITION]';
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SEI Compliance Letter - ${escapeHtml(recipientName)}</title>
+<style>
+  body {
+    font-family: "Times New Roman", serif;
+    font-size: 12pt;
+    line-height: 1.2;
+    margin: 1in;
+    color: #000;
+  }
+  p {
+    margin: 0 0 12pt 0;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+</style>
+</head>
+<body>
+
+<p>${escapeHtml(letterDate)}</p>
+
+<p>
+${escapeHtml(recipientName)}<br>
+${escapeHtml(address)}<br>
+${escapeHtml(cityStateZip)}
+</p>
+
+<p>Dear ${escapeHtml(salutation)}:</p>
+
+<p>
+The ${escapeHtml(filingYear)} Statement of Economic Interests, which was due on
+${escapeHtml(dueDate)}, has not been filed.
+</p>
+
+<div class="page-break"></div>
+
+<p>
+${escapeHtml(recipientName)}<br>
+${escapeHtml(letterDate)}<br>
+Page 2 of 2
+</p>
+
+<p>
+This is not a form letter. You are receiving this letter because you are currently
+in violation of the Ethics Reform Act. As a ${escapeHtml(position)}${municipality ? ` for ${escapeHtml(municipality)}` : ''},
+you are subject to the Ethics Reform Act, which is the body of laws that govern
+public officials, public members, and public employees.
+</p>
+
+<p>
+Continued delays in filing the ${escapeHtml(filingYear)} Statement of Economic Interests
+could result in accrual of late filing penalties with a maximum penalty of $5,000.00.
+While reviewing your Campaign Disclosures and Statements of Economic Interests,
+the following deficiencies were discovered:
+</p>
+
+<p>
+In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended,
+a late filing penalty is hereby levied. If the required report is not filed
+electronically within ten calendar days of receipt of this letter, additional
+penalties could be levied at $10 per day per report for the first ten days and
+$100 per day per report for each additional day until the penalty reaches $5,000
+per report, and a complaint could be filed against you.
+</p>
+
+<p>
+If extenuating circumstances prevented you from filing the reports as required,
+you may file a written appeal of this late filing penalty. To file an appeal,
+you must do the following within ten (10) days of receipt of this letter:
+</p>
+
+<p>
+• Send a personal check or money order made payable to the State Ethics Commission<br>
+• File all missing reports online at https://ethicsfiling.sc.gov/filing/home<br>
+• Provide a written statement describing any extenuating circumstances and include
+any supporting documentation.
+</p>
+
+<p>
+Please be advised that all appeals must be in writing and must follow the above
+directions. NO phone or e-mail appeals will be accepted. Failure to file is a
+misdemeanor. After the maximum civil penalty has been levied, this matter could
+be referred to Magistrate’s Court for criminal prosecution. This matter will also
+be referred to the South Carolina Department of Revenue for collection, and the
+penalty amount and your name, city, and position will be posted on the State Ethics
+Commission's website. Please contact this office if we can provide further information.
+</p>
+
+<p>
+Sincerely,
+</p>
+
+<p>
+[SIGNATURE]<br>
+[TITLE]
+</p>
+
+</body>
+</html>`;
+}
