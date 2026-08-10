@@ -354,7 +354,25 @@ function downloadBlob(blob, fileName) {
 
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
+const LETTER_SIGNERS = {
+  kristin: {
+    name: 'Kristin S. Nabors',
+    title: 'Director of Non-Compliance'
+  },
+  mel: {
+    name: 'Mel Baldwin',
+    title: 'Administrative Assistant Non-Compliance'
+  },
+  lindsey: {
+    name: 'Lindsey E. New',
+    title: 'Assistant Director - Non-Compliance'
+  }
+};
 
+function getSelectedLetterSigner() {
+  const signerKey = $('letterSigner')?.value || '';
+  return LETTER_SIGNERS[signerKey] || { name: '', title: '' };
+}
 function buildAnnualSeiWordDocument(row) {
   if (!window.docx) {
     throw new Error('Word document library did not load.');
@@ -369,7 +387,20 @@ function buildAnnualSeiWordDocument(row) {
   } = window.docx;
 
   const filingYear = row.__year || new Date().getFullYear();
+const selectedSigner = getSelectedLetterSigner();
 
+const deficiencyCount =
+  Array.isArray(row.__letterDeficiencies) && row.__letterDeficiencies.length
+    ? row.__letterDeficiencies.length
+    : 1;
+
+const initialPenalty = deficiencyCount * 100;
+
+const formattedPenalty = initialPenalty.toLocaleString('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2
+});
   const fullName =
     firstValue(row, [
       'Name',
@@ -450,7 +481,7 @@ function buildAnnualSeiWordDocument(row) {
   const normal = (text, options = {}) =>
     new Paragraph({
       spacing: {
-        after: options.after ?? 200,
+        after: options.after ?? 120,
         line: 240
       },
       alignment: options.alignment,
@@ -463,7 +494,10 @@ function buildAnnualSeiWordDocument(row) {
         })
       ]
     });
-
+const body = (text) =>
+  normal(text, {
+    alignment: AlignmentType.JUSTIFIED
+  });
   const blank = () =>
     new Paragraph({
       spacing: { after: 0 },
@@ -553,19 +587,19 @@ function buildAnnualSeiWordDocument(row) {
 
           blank(),
 
-          normal(
+          body(
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
           ),
 
-          normal(
+          nobodyrmal(
             `Continued delays in filing the ${filingYear} Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the following deficiencies were discovered:`
           ),
 
-          normal(
-            `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of [PENALTY AMOUNT] is hereby levied. If the required report is not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied at $10 per day per report for the first ten days and $100 per day per report for each additional day until the penalty reaches $5,000 per report, and a complaint could be filed against you.`
+          body(
+            `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of ${formattedPenalty} is hereby levied. If the required report is not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied at $10 per day per report for the first ten days and $100 per day per report for each additional day until the penalty reaches $5,000 per report, and a complaint could be filed against you.`
           ),
 
-          normal(
+          body(
             `If extenuating circumstances prevented you from filing the reports as required, you may file a written appeal of this late filing penalty. To file an appeal, you must do the following within ten (10) days of receipt of this letter:`
           ),
 
@@ -581,16 +615,15 @@ function buildAnnualSeiWordDocument(row) {
             'Provide a written statement describing any extenuating circumstances and include any supporting documentation. If you have closed your campaign account, please provide a copy of your last bank statement to consider a reduction in the late filing penalty.'
           ),
 
-          normal(
+          body(
             `Please be advised that all appeals must be in writing and must follow the above directions. NO phone or e-mail appeals will be accepted. Failure to file is a misdemeanor. After the maximum civil penalty has been levied, this matter could be referred to Magistrate’s Court for criminal prosecution. This matter will also be referred to the South Carolina Department of Revenue for collection, and the penalty amount and your name, city, and position will be posted on the State Ethics Commission's website. Please contact this office if we can provide further information.`
           ),
 
           blank(),
 
-          normal('Sincerely,'),
-          blank(),
-          normal('[SIGNATURE]'),
-          normal('[TITLE]')
+          normal('Sincerely,', { after: 80 }),
+normal(selectedSigner.name || '[SIGNATURE]', { after: 0 }),
+normal(selectedSigner.title || '[TITLE]', { after: 0 })
         ]
       }
     ]
