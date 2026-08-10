@@ -591,7 +591,7 @@ const body = (text) =>
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
           ),
 
-          nobodyrmal(
+          body(
             `Continued delays in filing the ${filingYear} Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the following deficiencies were discovered:`
           ),
 
