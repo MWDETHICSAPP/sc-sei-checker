@@ -374,20 +374,30 @@ const LETTER_SIGNERS = {
 
 function getSelectedLetterSigner() {
   const signerKey = $('letterSigner')?.value || '';
-  return LETTER_SIGNERS[signerKey] || { name: '', title: '' };
+  return LETTER_SIGNERS[signerKey] || {
+  name: '',
+  titleLine1: '',
+  titleLine2: ''
+};
 }
 function buildAnnualSeiWordDocument(row) {
   if (!window.docx) {
     throw new Error('Word document library did not load.');
   }
 
+ 
   const {
-    Document,
-    Paragraph,
-    TextRun,
-    Packer,
-    AlignmentType
-  } = window.docx;
+  Document,
+  Paragraph,
+  TextRun,
+  Packer,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  BorderStyle,
+  WidthType
+} = window.docx;
 
   const filingYear = row.__year || new Date().getFullYear();
 const selectedSigner = getSelectedLetterSigner();
@@ -519,7 +529,48 @@ const body = (text) =>
         })
       ]
     });
-
+const deficiencyBox = (text) =>
+  new Table({
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            borders: {
+              top: { style: BorderStyle.SINGLE, size: 8 },
+              bottom: { style: BorderStyle.SINGLE, size: 8 },
+              left: { style: BorderStyle.SINGLE, size: 8 },
+              right: { style: BorderStyle.SINGLE, size: 8 }
+            },
+            margins: {
+              top: 120,
+              bottom: 120,
+              left: 120,
+              right: 120
+            },
+            children: [
+              new Paragraph({
+                spacing: {
+                  after: 0,
+                  line: 240
+                },
+                children: [
+                  new TextRun({
+                    text,
+                    font: 'Times New Roman',
+                    size: 24
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      })
+    ]
+  });
   const recipientBlock = new Paragraph({
     spacing: { after: 200, line: 240 },
     children: [
@@ -584,11 +635,11 @@ const body = (text) =>
 
           normal(`Dear ${salutation}:`),
 
-          normal(
-            `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
-          ),
+          deficiencyBox(
+  `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
+),
 
-          blank(),
+       
 
           body(
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
