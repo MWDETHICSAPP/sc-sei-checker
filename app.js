@@ -665,7 +665,7 @@ blank(),
        
 
           body(
-            `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
+            `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`,
            { before: 120 }
 ), 
 
