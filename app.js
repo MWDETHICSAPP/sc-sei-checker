@@ -391,6 +391,7 @@ function buildAnnualSeiWordDocument(row) {
   Paragraph,
   TextRun,
     ExternalHyperlink,
+    ImageRun,
   Packer,
   AlignmentType,
   Table,
@@ -601,6 +602,9 @@ const deficiencyBox = (text) =>
     ? `${position} for ${jurisdiction}`
     : position;
 
+  const sealResponse = await fetch('./sc-seal.png');
+const sealBuffer = await sealResponse.arrayBuffer();
+  
   const doc = new Document({
     styles: {
       default: {
@@ -632,6 +636,19 @@ const deficiencyBox = (text) =>
         },
 
         children: [
+          new Paragraph({
+  alignment: AlignmentType.CENTER,
+  spacing: { after: 120 },
+  children: [
+    new ImageRun({
+      data: sealBuffer,
+      transformation: {
+        width: 75,
+        height: 75
+      }
+    })
+  ]
+}),
           normal(letterDate, { alignment: AlignmentType.CENTER }),
           recipientBlock,
 
