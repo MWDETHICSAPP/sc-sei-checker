@@ -659,7 +659,7 @@ blank(),
           deficiencyBox(
   `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
 ),
-blank(),
+
        
 
           body(
