@@ -640,12 +640,12 @@ const deficiencyBox = (text) =>
           deficiencyBox(
   `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
 ),
-
+blank(),
        
 
-          normal(
+          body(
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
-          , { alignment: AlignmentType.JUSTIFIED, after: 0 }),
+         ) , 
 
           body(
             `Continued delays in filing the ${filingYear} Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the following deficiencies were discovered:`
@@ -696,13 +696,13 @@ const deficiencyBox = (text) =>
 
           blank(),
 
-          normal('Sincerely,', { after: 0, indent: { left: 3600 } }),
+          normal('Sincerely,', { after: 0, indent: { left: 4320 } }),
 blank(),
 blank(),
-normal(selectedSigner.name || '[SIGNATURE]', { after: 0, indent: { left: 3600 } }),
-normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0, indent: { left: 3600 } }),
+normal(selectedSigner.name || '[SIGNATURE]', { after: 0, indent: { left: 4320 } }),
+normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0, indent: { left: 4320 } }),
 ...(selectedSigner.titleLine2
-  ? [normal(selectedSigner.titleLine2, { after: 0, indent: { left: 3600 } })]
+  ? [normal(selectedSigner.titleLine2, { after: 0, indent: { left: 4320 } })]
   : []),
         ]
       }
