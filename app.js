@@ -53,7 +53,7 @@ fileInput.addEventListener('change', async (event) => {
 });
 
 function populateColumns() {
-  for (const id of ['nameColumn', 'jurisdictionColumn']) {
+  for (const id of ['nameColumn', 'jurisdictionColumn', 'roleColumn']) {
     const select = $(id);
     select.innerHTML = '';
 
@@ -69,9 +69,10 @@ function populateColumns() {
   const jurisdictionGuess = headers.find(
     (h) => /county|jurisdiction|district|agency|board|city|town|counties served/i.test(h)
   );
-
+const roleGuess = headers.find((h) => /role|filing basis|status|type/i.test(h));
   if (nameGuess) $('nameColumn').value = nameGuess;
   if (jurisdictionGuess) $('jurisdictionColumn').value = jurisdictionGuess;
+  if (roleGuess) $('roleColumn').value = roleGuess;
 }
 
 function normalizeWhitespace(value) {
@@ -94,6 +95,7 @@ $('prepareBtn').addEventListener('click', async () => {
   const button = $('prepareBtn');
   const nameKey = $('nameColumn').value;
   const jurisdictionKey = $('jurisdictionColumn').value;
+  const roleKey = $('roleColumn').value;
   const year = Number($('yearInput').value) || 2026;
 
   preparedRows = sourceRows.map((row, index) => ({
@@ -101,6 +103,7 @@ $('prepareBtn').addEventListener('click', async () => {
     __index: index,
     __name: normalizeWhitespace(row[nameKey]),
     __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
+    __role: normalizeWhitespace(row[roleKey]),
     __surname: getSurname(row[nameKey]),
     __year: year,
     __status: 'Pending',
@@ -165,6 +168,7 @@ if (validRows.length === 0) {
 const people = validRows.map((row) => ({
     name: row.__name,
     jurisdiction: row.__jurisdiction,
+  role: row.__role,
     year
 }));
 
