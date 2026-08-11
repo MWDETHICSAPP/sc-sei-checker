@@ -636,7 +636,9 @@ const deficiencyBox = (text) =>
           recipientBlock,
 
           normal(`Dear ${salutation}:`),
-
+          
+blank(),
+          
           deficiencyBox(
   `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
 ),
@@ -689,7 +691,9 @@ blank(),
           bullet(
             'Provide a written statement describing any extenuating circumstances and include any supporting documentation. If you have closed your campaign account, please provide a copy of your last bank statement to consider a reduction in the late filing penalty.'
           ),
-
+          
+blank(),
+          
           body(
             `Please be advised that all appeals must be in writing and must follow the above directions. NO phone or e-mail appeals will be accepted. Failure to file is a misdemeanor. After the maximum civil penalty has been levied, this matter could be referred to Magistrate’s Court for criminal prosecution. This matter will also be referred to the South Carolina Department of Revenue for collection, and the penalty amount and your name, city, and position will be posted on the State Ethics Commission's website. Please contact this office if we can provide further information.`
           ),
@@ -697,6 +701,7 @@ blank(),
           blank(),
 
           normal('Sincerely,', { after: 0, indent: { left: 4320 } }),
+blank(),
 blank(),
 blank(),
 normal(selectedSigner.name || '[SIGNATURE]', { after: 0, indent: { left: 4320 } }),
