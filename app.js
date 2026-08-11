@@ -380,7 +380,7 @@ function getSelectedLetterSigner() {
   titleLine2: ''
 };
 }
-function buildAnnualSeiWordDocument(row, sealBuffer) {
+function buildAnnualSeiWordDocument(row) {
   if (!window.docx) {
     throw new Error('Word document library did not load.');
   }
@@ -391,7 +391,7 @@ function buildAnnualSeiWordDocument(row, sealBuffer) {
   Paragraph,
   TextRun,
     ExternalHyperlink,
-    ImageRun,
+   
   Packer,
   AlignmentType,
   Table,
@@ -636,21 +636,7 @@ const deficiencyBox = (text) =>
           }
         },
 
-        children: [
-          
-new Paragraph({
-  alignment: AlignmentType.CENTER,
-  spacing: { after: 120 },
-  children: [
-    new ImageRun({
-      data: sealBuffer,
-      transformation: {
-        width: 75,
-        height: 75
-      }
-    })
-  ]
-}),
+      children: [
           normal(letterDate, { alignment: AlignmentType.CENTER }),
           recipientBlock,
 
@@ -755,14 +741,10 @@ if (generateLettersBtn) {
     generateLettersBtn.textContent = 'Generating...';
 
     try {
-      const sealResponse = await fetch('./sc-seal.png');
-if (!sealResponse.ok) {
-  throw new Error('Could not load agency seal.');
-}
-const sealBuffer = await sealResponse.arrayBuffer();
+      
       for (const row of letterRows) {
         const { doc, Packer, fullName, filingYear } =
-            buildAnnualSeiWordDocument(row, sealBuffer);
+            buildAnnualSeiWordDocument(row);
 
         const blob = await Packer.toBlob(doc);
 
