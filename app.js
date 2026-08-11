@@ -380,7 +380,7 @@ function getSelectedLetterSigner() {
   titleLine2: ''
 };
 }
-function buildAnnualSeiWordDocument(row) {
+function buildAnnualSeiWordDocument(row, sealBuffer) {
   if (!window.docx) {
     throw new Error('Word document library did not load.');
   }
