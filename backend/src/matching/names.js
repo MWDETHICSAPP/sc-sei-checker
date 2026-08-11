@@ -5,6 +5,7 @@ function normalizePersonInput(input = {}) {
   return {
     name: cleanText(input.name),
     jurisdiction: cleanText(input.jurisdiction || input.county || input.entity || ""),
+    role: cleanText(input.role),
     year: Number.isInteger(yearNumber) && yearNumber >= 2000 && yearNumber <= 2100 ? yearNumber : 2026
   };
 }
