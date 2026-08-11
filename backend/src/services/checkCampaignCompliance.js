@@ -10,15 +10,54 @@
  *
  * It is not connected to the live application yet.
  */
-
+const CAMPAIGN_REPORTS_URL =
+  "https://ethicsfiling.sc.gov/api/Candidate/Report/Public/Campaign/Get/Reports";
 async function checkCampaignCompliance(input) {
+  const candidate = String(input?.candidate || input?.lastName || "")
+    .trim()
+    .toLowerCase();
+
+  const electionYear = Number(input?.electionYear);
+
+  if (!candidate || !electionYear) {
+    return {
+      input,
+      status: "Manual Review",
+      reviewType: "Campaign Disclosure",
+      reports: [],
+      notes: "Candidate last name and election year are required."
+    };
+  }
+
+  const response = await fetch(CAMPAIGN_REPORTS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      candidate,
+      office: input?.office || "",
+      reportType: input?.reportType || "Any",
+      electionType: input?.electionType || "Any",
+      electionYear
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Campaign report search failed with status ${response.status}`
+    );
+  }
+
+  const reports = await response.json();
+
   return {
     input,
-    status: "Not Yet Implemented",
+    status: "Search Complete",
     reviewType: "Campaign Disclosure",
-    reports: [],
-    notes:
-      "The campaign-disclosure compliance module has been created but is not yet connected."
+    reports: Array.isArray(reports) ? reports : [],
+    notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
 
