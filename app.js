@@ -702,7 +702,7 @@ blank(),
 normal(selectedSigner.name || '[SIGNATURE]', { after: 0, indent: { left: 3600 } }),
 normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0, indent: { left: 3600 } }),
 ...(selectedSigner.titleLine2
-  normal(selectedSigner.titleLine2, { after: 0, indent: { left: 3600 } })
+  ? [normal(selectedSigner.titleLine2, { after: 0, indent: { left: 3600 } })]
   : []),
         ]
       }
