@@ -390,6 +390,7 @@ function buildAnnualSeiWordDocument(row) {
   Document,
   Paragraph,
   TextRun,
+    ExternalHyperlink,
   Packer,
   AlignmentType,
   Table,
@@ -498,6 +499,7 @@ const formattedPenalty = initialPenalty.toLocaleString('en-US', {
         line: 240
       },
       alignment: options.alignment,
+      indent: options.indent,
       children: [
         new TextRun({
           text,
@@ -546,8 +548,8 @@ const deficiencyBox = (text) =>
               right: { style: BorderStyle.SINGLE, size: 8 }
             },
             margins: {
-              top: 120,
-              bottom: 120,
+              top: 60,
+              bottom: 60,
               left: 120,
               right: 120
             },
@@ -630,7 +632,7 @@ const deficiencyBox = (text) =>
         },
 
         children: [
-          normal(letterDate),
+          normal(letterDate, { alignment: AlignmentType.CENTER }),
           recipientBlock,
 
           normal(`Dear ${salutation}:`),
@@ -641,9 +643,9 @@ const deficiencyBox = (text) =>
 
        
 
-          body(
+          normal(
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
-          ),
+          , { alignment: AlignmentType.JUSTIFIED, after: 0 }),
 
           body(
             `Continued delays in filing the ${filingYear} Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the following deficiencies were discovered:`
@@ -661,9 +663,28 @@ const deficiencyBox = (text) =>
             'Send a personal check or money order made payable to the State Ethics Commission'
           ),
 
-          bullet(
-            'File all missing reports online at https://ethicsfiling.sc.gov/filing/home'
-          ),
+          new Paragraph({
+  bullet: { level: 0 },
+  spacing: { after: 0, line: 240 },
+  children: [
+    new TextRun({
+      text: 'File all missing reports online at ',
+      font: 'Times New Roman',
+      size: 24
+    }),
+    new ExternalHyperlink({
+      children: [
+        new TextRun({
+          text: 'https://ethicsfiling.sc.gov/filing/home',
+          font: 'Times New Roman',
+          size: 24,
+          style: 'Hyperlink'
+        })
+      ],
+      link: 'https://ethicsfiling.sc.gov/filing/home'
+    })
+  ]
+}),
 
           bullet(
             'Provide a written statement describing any extenuating circumstances and include any supporting documentation. If you have closed your campaign account, please provide a copy of your last bank statement to consider a reduction in the late filing penalty.'
@@ -675,13 +696,13 @@ const deficiencyBox = (text) =>
 
           blank(),
 
-          normal('Sincerely,', { after: 0 }),
+          normal('Sincerely,', { after: 0, indent: { left: 3600 } }),
 blank(),
 blank(),
-normal(selectedSigner.name || '[SIGNATURE]', { after: 0 }),
-normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0 }),
+normal(selectedSigner.name || '[SIGNATURE]', { after: 0, indent: { left: 3600 } }),
+normal(selectedSigner.titleLine1 || '[TITLE]', { after: 0, indent: { left: 3600 } }),
 ...(selectedSigner.titleLine2
-  ? [normal(selectedSigner.titleLine2, { after: 0 })]
+  normal(selectedSigner.titleLine2, { after: 0, indent: { left: 3600 } })
   : []),
         ]
       }
