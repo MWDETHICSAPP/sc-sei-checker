@@ -636,7 +636,7 @@ const deficiencyBox = (text) =>
 
         children: [
           
-}),
+
           normal(letterDate, { alignment: AlignmentType.CENTER }),
           recipientBlock,
 
