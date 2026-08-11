@@ -496,6 +496,7 @@ const formattedPenalty = initialPenalty.toLocaleString('en-US', {
   const normal = (text, options = {}) =>
     new Paragraph({
       spacing: {
+        before: options.before ?? 0,
         after: options.after ?? 120,
         line: 240
       },
@@ -665,7 +666,7 @@ blank(),
 
           body(
             `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`
-           { spacing: { before: 120 } }
+           { before: 120 }
 ), 
 
           body(
