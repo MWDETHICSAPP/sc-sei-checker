@@ -514,10 +514,10 @@ const body = (text) =>
     alignment: AlignmentType.JUSTIFIED
   });
   const blank = () =>
-    new Paragraph({
-      spacing: { after: 0 },
-      children: [new TextRun({ text: '' })]
-    });
+  new Paragraph({
+    spacing: { after: 0, line: 240 },
+    children: [new TextRun({ text: '\u00A0', size: 24 })]
+  });
 
   const bullet = (text) =>
     new Paragraph({
