@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const { checkPerson } = require("./services/checkPerson");
-
+const { checkCampaignCompliance } = require("./services/checkCampaignCompliance");
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
@@ -28,6 +28,14 @@ app.get("/health", (_req, res) => res.status(200).json({
 
 app.post("/check-person", async (req, res, next) => {
   try { res.json(await checkPerson(req.body)); } catch (e) { next(e); }
+});
+
+app.post("/check-campaign", async (req, res, next) => {
+  try {
+    res.json(await checkCampaignCompliance(req.body));
+  } catch (e) {
+    next(e);
+  }
 });
 
 app.post("/check-batch", async (req, res, next) => {
