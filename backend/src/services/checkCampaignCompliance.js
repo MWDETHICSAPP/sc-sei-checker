@@ -12,6 +12,15 @@
  */
 const CAMPAIGN_REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Candidate/Report/Public/Campaign/Get/Reports";
+function isDueWithinFourYears(dueDate, asOfDate = new Date()) {
+  const due = new Date(dueDate);
+  if (Number.isNaN(due.getTime())) return false;
+
+  const cutoff = new Date(asOfDate);
+  cutoff.setFullYear(cutoff.getFullYear() - 4);
+
+  return due >= cutoff && due <= asOfDate;
+}
 async function checkCampaignCompliance(input) {
   const candidate = String(input?.candidate || input?.lastName || "")
     .trim()
