@@ -636,7 +636,19 @@ const deficiencyBox = (text) =>
 
         children: [
           
-
+new Paragraph({
+  alignment: AlignmentType.CENTER,
+  spacing: { after: 120 },
+  children: [
+    new ImageRun({
+      data: sealBuffer,
+      transformation: {
+        width: 75,
+        height: 75
+      }
+    })
+  ]
+}),
           normal(letterDate, { alignment: AlignmentType.CENTER }),
           recipientBlock,
 
@@ -740,9 +752,14 @@ if (generateLettersBtn) {
     generateLettersBtn.textContent = 'Generating...';
 
     try {
+      const sealResponse = await fetch('./sc-seal.png');
+if (!sealResponse.ok) {
+  throw new Error('Could not load agency seal.');
+}
+const sealBuffer = await sealResponse.arrayBuffer();
       for (const row of letterRows) {
         const { doc, Packer, fullName, filingYear } =
-          buildAnnualSeiWordDocument(row);
+            buildAnnualSeiWordDocument(row, sealBuffer);
 
         const blob = await Packer.toBlob(doc);
 
