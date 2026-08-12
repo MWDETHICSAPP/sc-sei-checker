@@ -98,12 +98,42 @@ if (profileSeedReport) {
     profileSeedReport.seiFilerId
   );
 }
+  const requestedOffice = String(input?.office || "")
+  .trim()
+  .toLowerCase();
+
+const openOffices = Array.isArray(campaignProfile?.openOffices)
+  ? campaignProfile.openOffices
+  : [];
+
+const closedOffices = Array.isArray(campaignProfile?.closedOffices)
+  ? campaignProfile.closedOffices
+  : [];
+
+const relevantOfficeRuns = [...openOffices, ...closedOffices].filter(
+  (office) =>
+    String(office?.name || "").trim().toLowerCase() === requestedOffice
+);
+
+const relevantFilerIds = new Set(
+  relevantOfficeRuns
+    .map((office) => office?.filerId)
+    .filter(Boolean)
+);
+
+const relevantReports = reportList.filter(
+  (report) =>
+    relevantFilerIds.has(report?.candidateFilerId) &&
+    String(report?.office || "").trim().toLowerCase() === requestedOffice
+);
   return {
     input,
     status: "Search Complete",
     reviewType: "Campaign Disclosure",
    reports: reportList,
     campaignProfile,
+    relevantOfficeRuns,
+relevantReports,
     notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
