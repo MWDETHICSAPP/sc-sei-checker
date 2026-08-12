@@ -126,6 +126,13 @@ const relevantReports = reportList.filter(
     relevantFilerIds.has(report?.candidateFilerId) &&
     String(report?.office || "").trim().toLowerCase() === requestedOffice
 );
+  const reportsWithinFourYears = relevantReports.filter((report) => {
+  const filedDate = report?.lastUpdated;
+
+  if (!filedDate) return false;
+
+  return isDueWithinFourYears(filedDate);
+});
   return {
     input,
     status: "Search Complete",
@@ -134,6 +141,7 @@ const relevantReports = reportList.filter(
     campaignProfile,
     relevantOfficeRuns,
 relevantReports,
+    reportsWithinFourYears,
     notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
