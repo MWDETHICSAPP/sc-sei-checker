@@ -221,16 +221,7 @@ async function getCampaignFundEndingBalance(reportId) {
 
   if (!detail) return null;
 
-  const totals = Array.isArray(detail?.totals) ? detail.totals : [];
-
-  const campaignFunds = totals.find(
-    (total) =>
-      String(total?.totalType || "").trim().toLowerCase() === "campaign funds"
-  );
-
-  if (campaignFunds?.endingBalance === undefined) return null;
-
-  const endingBalance = Number(campaignFunds.endingBalance);
+  const endingBalance = Number(detail?.endingBalance);
 
   return Number.isNaN(endingBalance) ? null : endingBalance;
 }
