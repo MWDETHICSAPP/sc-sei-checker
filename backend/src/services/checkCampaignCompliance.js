@@ -26,15 +26,15 @@ async function checkCampaignCompliance(input) {
     .trim()
     .toLowerCase();
 
-  const electionYear = Number(input?.electionYear);
+  const reportingYear = Number(input?.reportingYear || input?.year);
 
-  if (!candidate || !electionYear) {
+  if (!candidate || !reportingYear) {
     return {
       input,
       status: "Manual Review",
       reviewType: "Campaign Disclosure",
       reports: [],
-      notes: "Candidate last name and election year are required."
+      notes: "Candidate last name and reporting year are required."
     };
   }
 
@@ -49,8 +49,7 @@ async function checkCampaignCompliance(input) {
       office: input?.office || "",
       reportType: input?.reportType || "Any",
       electionType: input?.electionType || "Any",
-      electionYear
-    })
+        })
   });
 
   if (!response.ok) {
