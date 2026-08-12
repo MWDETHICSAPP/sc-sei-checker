@@ -46,6 +46,25 @@ function isDueWithinFourYears(dueDate, asOfDate = new Date()) {
 
   return due >= cutoff && due <= asOfDate;
 }
+function getQuarterlyDueDate(reportName) {
+  const match = String(reportName || "").match(
+    /Quarter\s+([1-4]),\s*(\d{4})\s+Report/i
+  );
+
+  if (!match) return null;
+
+  const quarter = Number(match[1]);
+  const year = Number(match[2]);
+
+  const dueDates = {
+    1: new Date(year, 3, 10),      // April 10
+    2: new Date(year, 6, 10),      // July 10
+    3: new Date(year, 9, 10),      // October 10
+    4: new Date(year + 1, 0, 10),  // January 10 of following year
+  };
+
+  return dueDates[quarter] || null;
+}
 async function checkCampaignCompliance(input) {
   const candidate = String(input?.candidate || input?.lastName || "")
     .trim()
@@ -135,11 +154,11 @@ const relevantReports = reportList.filter(
     String(report?.office || "").trim().toLowerCase() === requestedOffice
 );
   const reportsWithinFourYears = relevantReports.filter((report) => {
-  const filedDate = report?.lastUpdated;
+  const dueDate = getQuarterlyDueDate(report?.reportName);
 
-  if (!filedDate) return false;
+  if (!dueDate) return false;
 
-  return isDueWithinFourYears(filedDate);
+  return isDueWithinFourYears(dueDate);
 });
   return {
     input,
