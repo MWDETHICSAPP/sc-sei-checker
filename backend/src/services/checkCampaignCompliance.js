@@ -292,7 +292,10 @@ const relevantOfficeRuns = [...openOffices, ...closedOffices].filter(
     return isDueWithinFourYears(office?.end);
   }
 );
-
+console.log(
+  "RELEVANT OFFICE RUNS:",
+  JSON.stringify(relevantOfficeRuns, null, 2)
+);
 const relevantFilerIds = new Set(
   relevantOfficeRuns
     .map((office) => office?.filerId)
