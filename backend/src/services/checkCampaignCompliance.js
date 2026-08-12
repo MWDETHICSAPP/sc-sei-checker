@@ -218,7 +218,11 @@ async function getOriginalSubmissionDate(reportId) {
 }
 async function getCampaignFundEndingBalance(reportId) {
   const detail = await getCampaignReportDetail(reportId);
-
+console.log("BALANCE DEBUG:", {
+  reportId,
+  endingBalance: detail?.endingBalance,
+  keys: detail ? Object.keys(detail) : []
+});
   if (!detail) return null;
 
   const endingBalance = Number(detail?.endingBalance);
