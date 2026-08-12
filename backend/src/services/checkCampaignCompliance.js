@@ -334,6 +334,16 @@ const relevantReports = reportList.filter(
 
   return isDueWithinFourYears(dueDate);
 });
+  reportsWithinFourYears.sort((a, b) => {
+  const aDueDate = getQuarterlyDueDate(a?.reportName);
+  const bDueDate = getQuarterlyDueDate(b?.reportName);
+
+  if (!aDueDate && !bDueDate) return 0;
+  if (!aDueDate) return 1;
+  if (!bDueDate) return -1;
+
+  return aDueDate - bDueDate;
+});
   const evaluatedQuarterlyReports = [];
 let enforcementCutoffReached = false;
 for (const report of reportsWithinFourYears) {
