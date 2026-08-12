@@ -111,8 +111,16 @@ const closedOffices = Array.isArray(campaignProfile?.closedOffices)
   : [];
 
 const relevantOfficeRuns = [...openOffices, ...closedOffices].filter(
-  (office) =>
-    String(office?.name || "").trim().toLowerCase() === requestedOffice
+  (office) => {
+    const officeMatches =
+      String(office?.name || "").trim().toLowerCase() === requestedOffice;
+
+    if (!officeMatches) return false;
+
+    if (!office?.isClosed) return true;
+
+    return isDueWithinFourYears(office?.end);
+  }
 );
 
 const relevantFilerIds = new Set(
