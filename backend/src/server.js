@@ -6,7 +6,7 @@ const { checkCampaignCompliance } = require("./services/checkCampaignCompliance"
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
-  "https://mwdethicsapp.github.io,http://localhost:8000,http://localhost:3000")
+  "https://mwdethicsapp.github.io,https://sc-sei-checker.onrender.com,http://localhost:8000,http://localhost:3000")
   .split(",").map(v => v.trim()).filter(Boolean);
 
 app.disable("x-powered-by");
