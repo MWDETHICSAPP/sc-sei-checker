@@ -335,8 +335,9 @@ const relevantReports = reportList.filter(
   return isDueWithinFourYears(dueDate);
 });
   const evaluatedQuarterlyReports = [];
-
+let enforcementCutoffReached = false;
 for (const report of reportsWithinFourYears) {
+  if (enforcementCutoffReached) break;
   const dueDate = getQuarterlyDueDate(report?.reportName);
   const originalSubmittedDate = await getOriginalSubmissionDate(report?.reportId);
   const endingBalance = await getCampaignFundEndingBalance(report?.reportId);
@@ -355,6 +356,9 @@ timely:
     ? submittedDate <= gracePeriodDeadline
     : null
   });
+  if (endingBalance === 0) {
+  enforcementCutoffReached = true;
+}
 }
   return {
     input,
