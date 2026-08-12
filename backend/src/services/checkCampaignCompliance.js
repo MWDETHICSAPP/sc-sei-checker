@@ -216,6 +216,24 @@ async function getOriginalSubmissionDate(reportId) {
 
   return detail?.overview?.submittedDate || null;
 }
+async function getCampaignFundEndingBalance(reportId) {
+  const detail = await getCampaignReportDetail(reportId);
+
+  if (!detail) return null;
+
+  const totals = Array.isArray(detail?.totals) ? detail.totals : [];
+
+  const campaignFunds = totals.find(
+    (total) =>
+      String(total?.totalType || "").trim().toLowerCase() === "campaign funds"
+  );
+
+  if (campaignFunds?.endingBalance === undefined) return null;
+
+  const endingBalance = Number(campaignFunds.endingBalance);
+
+  return Number.isNaN(endingBalance) ? null : endingBalance;
+}
 async function checkCampaignCompliance(input) {
   const candidate = String(input?.candidate || input?.lastName || "")
     .trim()
@@ -319,6 +337,7 @@ const relevantReports = reportList.filter(
 for (const report of reportsWithinFourYears) {
   const dueDate = getQuarterlyDueDate(report?.reportName);
   const originalSubmittedDate = await getOriginalSubmissionDate(report?.reportId);
+  const endingBalance = await getCampaignFundEndingBalance(report?.reportId);
 const gracePeriodDeadline = getGracePeriodDeadline(dueDate);
 const submittedDate = originalSubmittedDate ? new Date(originalSubmittedDate) : null;
   evaluatedQuarterlyReports.push({
@@ -328,6 +347,7 @@ gracePeriodDeadline: gracePeriodDeadline
   ? gracePeriodDeadline.toISOString()
   : null,
 originalSubmittedDate,
+    endingBalance,
 timely:
   submittedDate && gracePeriodDeadline
     ? submittedDate <= gracePeriodDeadline
