@@ -65,6 +65,157 @@ function getQuarterlyDueDate(reportName) {
 
   return dueDates[quarter] || null;
 }
+function isObservedFixedHoliday(date, month, day) {
+  const targetTime = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  ).getTime();
+
+  const yearsToCheck = [
+    date.getFullYear() - 1,
+    date.getFullYear(),
+    date.getFullYear() + 1
+  ];
+
+  return yearsToCheck.some((year) => {
+    const holiday = new Date(year, month, day);
+
+    if (holiday.getDay() === 6) {
+      holiday.setDate(holiday.getDate() - 1);
+    } else if (holiday.getDay() === 0) {
+      holiday.setDate(holiday.getDate() + 1);
+    }
+
+    return holiday.getTime() === targetTime;
+  });
+}
+
+function isNthWeekday(date, month, weekday, nth) {
+  return (
+    date.getMonth() === month &&
+    date.getDay() === weekday &&
+    Math.ceil(date.getDate() / 7) === nth
+  );
+}
+
+function isLastMonday(date, month) {
+  if (date.getMonth() !== month || date.getDay() !== 1) return false;
+
+  const nextWeek = new Date(date);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+
+  return nextWeek.getMonth() !== month;
+}
+
+function isStateOrFederalHoliday(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+
+  // Fixed-date state/federal holidays, including observed dates
+  if (
+    isObservedFixedHoliday(date, 0, 1) ||   // New Year's Day
+    isObservedFixedHoliday(date, 5, 19) ||  // Juneteenth
+    isObservedFixedHoliday(date, 6, 4) ||   // Independence Day
+    isObservedFixedHoliday(date, 10, 11) || // Veterans Day
+    isObservedFixedHoliday(date, 11, 24) || // Christmas Eve
+    isObservedFixedHoliday(date, 11, 25) || // Christmas Day
+    isObservedFixedHoliday(date, 11, 26)    // Day after Christmas
+  ) {
+    return true;
+  }
+
+  // Monday-based state/federal holidays
+  if (
+    isNthWeekday(date, 0, 1, 3) ||  // MLK Day
+    isNthWeekday(date, 1, 1, 3) ||  // Washington's Birthday
+    isLastMonday(date, 4) ||         // Memorial Day
+    isNthWeekday(date, 8, 1, 1) ||  // Labor Day
+    isNthWeekday(date, 9, 1, 2)     // Columbus Day
+  ) {
+    return true;
+  }
+
+  // Confederate Memorial Day: May 10, observed under SC rules
+  if (isObservedFixedHoliday(date, 4, 10)) {
+  return true;
+}
+
+  // Day after Thanksgiving
+  const thanksgiving = new Date(year, 10, 1);
+  while (
+    thanksgiving.getDay() !== 4 ||
+    Math.ceil(thanksgiving.getDate() / 7) !== 4
+  ) {
+    thanksgiving.setDate(thanksgiving.getDate() + 1);
+  }
+
+  const dayAfterThanksgiving = new Date(thanksgiving);
+  dayAfterThanksgiving.setDate(dayAfterThanksgiving.getDate() + 1);
+
+  if (
+    month === dayAfterThanksgiving.getMonth() &&
+    day === dayAfterThanksgiving.getDate()
+  ) {
+    return true;
+  }
+
+  return false;
+}
+function getGracePeriodDeadline(
+  dueDate,
+  isHoliday = isStateOrFederalHoliday
+) {
+  if (!dueDate) return null;
+
+  const deadline = new Date(dueDate);
+  deadline.setDate(deadline.getDate() + 5);
+
+  while (
+    deadline.getDay() === 0 ||
+    deadline.getDay() === 6 ||
+    isHoliday(deadline)
+  ) {
+    deadline.setDate(deadline.getDate() + 1);
+  }
+
+  return deadline;
+}
+async function getCampaignReportDetail(reportId) {
+  if (!reportId) return null;
+
+  const response = await fetch(
+    `https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Candidate/Report/Details/${reportId}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Campaign report detail search failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+}
+async function getOriginalSubmissionDate(reportId) {
+  const detail = await getCampaignReportDetail(reportId);
+
+  if (!detail) return null;
+
+  const versions = Array.isArray(detail?.versions) ? detail.versions : [];
+
+  const originalVersion = versions.find(
+    (version) =>
+      String(version?.name || "").trim().toLowerCase() === "original report"
+  );
+
+  if (originalVersion?.id && originalVersion.id !== reportId) {
+    const originalDetail = await getCampaignReportDetail(originalVersion.id);
+    return originalDetail?.overview?.submittedDate || null;
+  }
+
+  return detail?.overview?.submittedDate || null;
+}
 async function checkCampaignCompliance(input) {
   const candidate = String(input?.candidate || input?.lastName || "")
     .trim()
@@ -160,6 +311,26 @@ const relevantReports = reportList.filter(
 
   return isDueWithinFourYears(dueDate);
 });
+  const evaluatedQuarterlyReports = [];
+
+for (const report of reportsWithinFourYears) {
+  const dueDate = getQuarterlyDueDate(report?.reportName);
+  const originalSubmittedDate = await getOriginalSubmissionDate(report?.reportId);
+const gracePeriodDeadline = getGracePeriodDeadline(dueDate);
+const submittedDate = originalSubmittedDate ? new Date(originalSubmittedDate) : null;
+  evaluatedQuarterlyReports.push({
+    ...report,
+    dueDate: dueDate ? dueDate.toISOString() : null,
+gracePeriodDeadline: gracePeriodDeadline
+  ? gracePeriodDeadline.toISOString()
+  : null,
+originalSubmittedDate,
+timely:
+  submittedDate && gracePeriodDeadline
+    ? submittedDate <= gracePeriodDeadline
+    : null
+  });
+}
   return {
     input,
     status: "Search Complete",
@@ -169,6 +340,7 @@ const relevantReports = reportList.filter(
     relevantOfficeRuns,
 relevantReports,
     reportsWithinFourYears,
+    evaluatedQuarterlyReports,
     notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
