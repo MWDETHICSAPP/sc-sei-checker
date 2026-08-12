@@ -12,6 +12,31 @@
  */
 const CAMPAIGN_REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Candidate/Report/Public/Campaign/Get/Reports";
+const CAMPAIGN_PROFILE_URL =
+  "https://ethicsfiling.sc.gov/api/Candidate/Campaign/Get/Personal/Profile";
+async function getCampaignProfile(candidateFilerId, seiFilerId) {
+  if (!candidateFilerId || !seiFilerId) return null;
+
+  const response = await fetch(CAMPAIGN_PROFILE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      candidateFilerId,
+      seiFilerId
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Campaign profile search failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+}
 function isDueWithinFourYears(dueDate, asOfDate = new Date()) {
   const due = new Date(dueDate);
   if (Number.isNaN(due.getTime())) return false;
@@ -59,12 +84,26 @@ async function checkCampaignCompliance(input) {
   }
 
   const reports = await response.json();
+const reportList = Array.isArray(reports) ? reports : [];
 
+const profileSeedReport = reportList.find(
+  (report) => report?.candidateFilerId && report?.seiFilerId
+);
+
+let campaignProfile = null;
+
+if (profileSeedReport) {
+  campaignProfile = await getCampaignProfile(
+    profileSeedReport.candidateFilerId,
+    profileSeedReport.seiFilerId
+  );
+}
   return {
     input,
     status: "Search Complete",
     reviewType: "Campaign Disclosure",
-    reports: Array.isArray(reports) ? reports : [],
+   reports: reportList,
+    campaignProfile,
     notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
