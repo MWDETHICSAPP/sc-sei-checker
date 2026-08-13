@@ -247,7 +247,13 @@ async function checkCampaignCompliance(input) {
   input?.name || input?.candidate || input?.lastName || ""
 ).trim();
 
-const candidate = candidateName.toLowerCase();
+const candidate = String(
+  input?.lastName ||
+  candidateName.split(/\s+/).filter(Boolean).pop() ||
+  ""
+)
+  .trim()
+  .toLowerCase();
 
   const reportingYear = Number(input?.reportingYear || input?.year);
 
