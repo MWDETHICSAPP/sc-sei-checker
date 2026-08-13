@@ -442,11 +442,20 @@ const relevantFilerIds = new Set(
     .filter(Boolean)
 );
 
-const relevantReports = reportList.filter(
-  (report) =>
-    relevantFilerIds.has(report?.candidateFilerId) &&
-    String(report?.office || "").trim().toLowerCase() === requestedOffice
-);
+const relevantReports = reportList.filter((report) => {
+  const filerMatches =
+    relevantFilerIds.has(report?.candidateFilerId);
+
+  if (!filerMatches) return false;
+
+  if (!requestedOffice) return true;
+
+  return (
+    String(report?.office || "")
+      .trim()
+      .toLowerCase() === requestedOffice
+  );
+});
   const reportsWithinFourYears = relevantReports.filter((report) => {
   const dueDate = getQuarterlyDueDate(report?.reportName);
 
