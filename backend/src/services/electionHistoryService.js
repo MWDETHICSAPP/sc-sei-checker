@@ -53,6 +53,25 @@ async function getContestPage(contestId) {
 const SC_VOTES_GRAPHQL_URL =
   `${SC_VOTES_BASE_URL}/api/graphql_pr`;
 
+const QUICK_SEARCH_QUERY = `
+  query QuickSearch($query: String!) {
+    quickSearch(
+      query: $query
+      includeCandidates: true
+      includeContests: true
+      includeBallotQuestions: true
+      limit: 20
+    ) {
+      id
+      resultKind
+      displayName1
+      displayName2
+      displayName3
+      score
+    }
+  }
+`;
+
 const GET_CANDIDATE_QUERY = `
   query GetCandidate($candidateId: Int!) {
     candidate(id: $candidateId) {
@@ -90,6 +109,68 @@ const GET_CANDIDATE_QUERY = `
     }
   }
 `;
+
+async function searchCandidates(candidateName) {
+  const query = String(candidateName || "").trim();
+
+  if (!query) {
+    return [];
+  }
+
+  const response = await fetch(SC_VOTES_GRAPHQL_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "x-elstats-tenant": "sc"
+    },
+    body: JSON.stringify({
+      operationName: "QuickSearch",
+      variables: {
+        query
+      },
+      query: QUICK_SEARCH_QUERY
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `SC Votes candidate search failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const payload = await response.json();
+
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    throw new Error(
+      `SC Votes GraphQL error: ${payload.errors
+        .map((error) => error?.message)
+        .filter(Boolean)
+        .join("; ")}`
+    );
+  }
+
+  const results = Array.isArray(payload?.data?.quickSearch)
+    ? payload.data.quickSearch
+    : [];
+
+  return results
+    .filter((result) => result?.resultKind === "candidate")
+    .sort((a, b) => {
+      const aExact =
+        normalizeCandidateName(a?.displayName1) ===
+        normalizeCandidateName(query);
+
+      const bExact =
+        normalizeCandidateName(b?.displayName1) ===
+        normalizeCandidateName(query);
+
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      return Number(b?.score || 0) - Number(a?.score || 0);
+    });
+}
 
 async function getCandidateHistory(candidateId) {
   const id = Number(candidateId);
@@ -135,5 +216,6 @@ async function getCandidateHistory(candidateId) {
 }
 
 module.exports = {
+  searchCandidates,
   getCandidateHistory
 };
