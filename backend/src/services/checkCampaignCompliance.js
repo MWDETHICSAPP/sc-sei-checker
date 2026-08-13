@@ -11,6 +11,11 @@
  * It is not connected to the live application yet.
  */
 const { findMatchingCampaignRuns } = require("./campaignRunMatcher");
+const {
+  searchCandidates,
+  getCandidateHistory
+} = require("./electionHistoryService");
+
 const CAMPAIGN_REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Candidate/Report/Public/Campaign/Get/Reports";
 const CAMPAIGN_PROFILE_URL =
