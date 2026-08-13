@@ -10,6 +10,7 @@
  *
  * It is not connected to the live application yet.
  */
+const { findMatchingCampaignRuns } = require("./campaignRunMatcher");
 const CAMPAIGN_REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Candidate/Report/Public/Campaign/Get/Reports";
 const CAMPAIGN_PROFILE_URL =
@@ -304,18 +305,24 @@ const closedOffices = Array.isArray(campaignProfile?.closedOffices)
   ? campaignProfile.closedOffices
   : [];
 
-const relevantOfficeRuns = [...openOffices, ...closedOffices].filter(
-  (office) => {
-    const officeMatches =
-      String(office?.name || "").trim().toLowerCase() === requestedOffice;
+const allOfficeRuns = [...openOffices, ...closedOffices];
 
-    if (!officeMatches) return false;
+const relevantOfficeRuns = input?.electionDate
+  ? findMatchingCampaignRuns(
+      allOfficeRuns,
+      requestedOffice,
+      input.electionDate
+    )
+  : allOfficeRuns.filter((office) => {
+      const officeMatches =
+        String(office?.name || "").trim().toLowerCase() === requestedOffice;
 
-    if (!office?.isClosed) return true;
+      if (!officeMatches) return false;
 
-    return isDueWithinFourYears(office?.end);
-  }
-);
+      if (!office?.isClosed) return true;
+
+      return isDueWithinFourYears(office?.end);
+    });
 console.log(
   "RELEVANT OFFICE RUNS:",
   JSON.stringify(relevantOfficeRuns, null, 2)
