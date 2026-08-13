@@ -3,6 +3,12 @@ const cors = require("cors");
 const helmet = require("helmet");
 const { checkPerson } = require("./services/checkPerson");
 const { checkCampaignCompliance } = require("./services/checkCampaignCompliance");
+const {
+  buildSearchPayload,
+  downloadSearchCsv
+} = require("./services/electionHistoryService");
+
+
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
@@ -25,6 +31,22 @@ app.get("/", (_req, res) => res.json({name:"SC SEI Checker API",version:"0.2.0",
 app.get("/health", (_req, res) => res.status(200).json({
   ok:true, service:"sc-sei-checker-backend", version:"0.2.0", timestamp:new Date().toISOString()
 }));
+
+app.get("/test-election-history", async (_req, res, next) => {
+  try {
+    const searchPayload = buildSearchPayload({
+      fromYear: 2022,
+      toYear: 2022,
+      candidateIds: [4576]
+    });
+
+    const csv = await downloadSearchCsv(searchPayload);
+
+    res.type("text/plain").send(csv);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.post("/check-person", async (req, res, next) => {
   try { res.json(await checkPerson(req.body)); } catch (e) { next(e); }
