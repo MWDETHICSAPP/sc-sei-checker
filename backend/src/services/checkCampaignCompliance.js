@@ -243,9 +243,11 @@ async function getCampaignFundEndingBalance(reportId) {
   return Number.isNaN(endingBalance) ? null : endingBalance;
 }
 async function checkCampaignCompliance(input) {
-  const candidate = String(input?.candidate || input?.lastName || "")
-    .trim()
-    .toLowerCase();
+ const candidateName = String(
+  input?.name || input?.candidate || input?.lastName || ""
+).trim();
+
+const candidate = candidateName.toLowerCase();
 
   const reportingYear = Number(input?.reportingYear || input?.year);
 
@@ -311,23 +313,119 @@ const closedOffices = Array.isArray(campaignProfile?.closedOffices)
   : [];
 
 const allOfficeRuns = [...openOffices, ...closedOffices];
+ let scVotesMatches = [];
 
-const relevantOfficeRuns = input?.electionDate
-  ? findMatchingCampaignRuns(
-      allOfficeRuns,
-      requestedOffice,
-      input.electionDate
+if (candidateName) {
+  try {
+    scVotesMatches = await searchCandidates(candidateName);
+  } catch (error) {
+    console.error(
+      "SC Votes candidate search failed:",
+      error.message
+    );
+  }
+}
+  const scVotesCandidates = [];
+
+for (const match of scVotesMatches.slice(0, 5)) {
+  if (!match?.id) continue;
+
+  try {
+    const history = await getCandidateHistory(match.id);
+
+    if (history) {
+      scVotesCandidates.push({
+        searchMatch: match,
+        history
+      });
+    }
+  } catch (error) {
+    console.error(
+      `SC Votes history lookup failed for candidate ${match.id}:`,
+      error.message
+    );
+  }
+}
+
+const ethicsOfficeNames = new Set(
+  allOfficeRuns
+    .map((run) => String(run?.name || "").trim().toLowerCase())
+    .filter(Boolean)
+);
+
+const scVotesCandidatesWithMatchingOffice = scVotesCandidates.filter(
+  ({ history }) =>
+    Array.isArray(history?.contests) &&
+    history.contests.some((entry) =>
+      ethicsOfficeNames.has(
+        String(entry?.contest?.office?.name || "")
+          .trim()
+          .toLowerCase()
+      )
     )
-  : allOfficeRuns.filter((office) => {
-      const officeMatches =
-        String(office?.name || "").trim().toLowerCase() === requestedOffice;
+);  
 
-      if (!officeMatches) return false;
 
-      if (!office?.isClosed) return true;
 
-      return isDueWithinFourYears(office?.end);
-    });
+const scVotesElectionContests =
+  scVotesCandidatesWithMatchingOffice.length === 1
+    ? scVotesCandidatesWithMatchingOffice[0].history.contests.filter(
+        (entry) =>
+          entry?.contest?.office?.name &&
+          entry?.contest?.event?.startDate
+      )
+    : [];
+  
+const scVotesMatchedRuns = [
+  ...new Set(
+    scVotesElectionContests.flatMap((entry) => {
+      const officeName = String(
+        entry?.contest?.office?.name || ""
+      ).trim();
+
+      const electionDate =
+        entry?.contest?.event?.startDate || null;
+
+      if (!officeName || !electionDate) {
+        return [];
+      }
+
+      return findMatchingCampaignRuns(
+        allOfficeRuns,
+        officeName,
+        electionDate
+      );
+    })
+  )
+];
+
+const relevantOfficeRuns =
+  input?.electionDate && requestedOffice
+    ? findMatchingCampaignRuns(
+        allOfficeRuns,
+        requestedOffice,
+        input.electionDate
+      )
+    : scVotesMatchedRuns.length > 0
+    ? scVotesMatchedRuns
+    : requestedOffice
+    ? allOfficeRuns.filter((office) => {
+        const officeMatches =
+          String(office?.name || "")
+            .trim()
+            .toLowerCase() === requestedOffice;
+
+        if (!officeMatches) return false;
+
+        if (office?.isClosed) return true;
+
+        return isDueWithinFourYears(office?.end);
+      })
+    : allOfficeRuns.filter((office) => {
+        if (office?.isClosed) return true;
+
+        return isDueWithinFourYears(office?.end);
+      });
 console.log(
   "RELEVANT OFFICE RUNS:",
   JSON.stringify(relevantOfficeRuns, null, 2)
