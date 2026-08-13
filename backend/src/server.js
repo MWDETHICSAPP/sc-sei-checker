@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const { checkPerson } = require("./services/checkPerson");
 const { checkCampaignCompliance } = require("./services/checkCampaignCompliance");
 const {
+  searchCandidates,
   getCandidateHistory
 } = require("./services/electionHistoryService");
 
@@ -33,8 +34,21 @@ app.get("/health", (_req, res) => res.status(200).json({
 
 app.get("/test-election-history", async (_req, res, next) => {
   try {
-    const candidate = await getCandidateHistory(4576);
-    res.json(candidate);
+    const matches = await searchCandidates("Henry McMaster");
+    const bestMatch = matches[0];
+
+    if (!bestMatch?.id) {
+      return res.status(404).json({
+        error: "No SC Votes candidate match found."
+      });
+    }
+
+    const candidate = await getCandidateHistory(bestMatch.id);
+
+    res.json({
+      searchMatch: bestMatch,
+      candidate
+    });
   } catch (e) {
     next(e);
   }
