@@ -288,6 +288,10 @@ if (profileSeedReport) {
     profileSeedReport.seiFilerId
   );
 }
+  console.log(
+  "CAMPAIGN PROFILE:",
+  JSON.stringify(campaignProfile, null, 2)
+);
   const requestedOffice = String(input?.office || "")
   .trim()
   .toLowerCase();
