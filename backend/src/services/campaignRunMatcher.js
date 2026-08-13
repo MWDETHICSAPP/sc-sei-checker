@@ -15,6 +15,7 @@ function normalizeDate(value) {
 
   return date;
 }
+
 function officeNamesMatch(a, b) {
   const left = normalizeOfficeName(a);
   const right = normalizeOfficeName(b);
@@ -22,9 +23,9 @@ function officeNamesMatch(a, b) {
   if (!left || !right) return false;
 
   return left === right;
-  
-  function campaignRunContainsElectionDate(run, electionDate) {
-   
+}
+
+function campaignRunContainsElectionDate(run, electionDate) {
   const election = normalizeDate(electionDate);
 
   if (!election) return false;
@@ -37,7 +38,7 @@ function officeNamesMatch(a, b) {
 
   return true;
 }
-}
+
 function findMatchingCampaignRuns(runs, officeName, electionDate) {
   const runList = Array.isArray(runs) ? runs : [];
 
@@ -53,6 +54,7 @@ function findMatchingCampaignRuns(runs, officeName, electionDate) {
     return campaignRunContainsElectionDate(run, electionDate);
   });
 }
+
 module.exports = {
   findMatchingCampaignRuns
 };
