@@ -50,59 +50,90 @@ async function getContestPage(contestId) {
   return fetchScVotesPage(`/contest/${contestId}`);
 }
 
-function buildSearchPayload({
-  fromYear,
-  toYear,
-  candidateIds = [],
-  officeIds = []
-}) {
-  return {
-    global: {
-      years: {
-        from: Number(fromYear),
-        to: Number(toYear)
+const SC_VOTES_GRAPHQL_URL =
+  `${SC_VOTES_BASE_URL}/api/graphql_pr`;
+
+const GET_CANDIDATE_QUERY = `
+  query GetCandidate($candidateId: Int!) {
+    candidate(id: $candidateId) {
+      id
+      displayName
+      firstName
+      lastName
+      contests {
+        id
+        year
+        isWinner
+        contest {
+          id
+          eventTypeDisplayName
+          isRunoff
+          isSpecial
+          event {
+            id
+            startDate
+            type {
+              id
+              name
+            }
+          }
+          office {
+            id
+            name
+          }
+          division {
+            id
+            displayName
+          }
+        }
       }
-    },
-    ballotQuestions: {
-      text: "",
-      types: [],
-      number: "",
-      divisions: []
-    },
-    contests: {
-      candidates: candidateIds,
-      divisions: [],
-      offices: officeIds
-    },
-    specialElectionsOnly: false,
-    voterStats: false,
-    stages: []
-  };
-}
+    }
+  }
+`;
 
-async function downloadSearchCsv(searchPayload) {
-  const encodedSearch = encodeURIComponent(JSON.stringify(searchPayload));
+async function getCandidateHistory(candidateId) {
+  const id = Number(candidateId);
 
-  const url =
-    `https://sc.elstats.civera.com/api/download_search.csv?search=${encodedSearch}`;
+  if (!Number.isInteger(id)) {
+    throw new Error("A valid SC Votes candidate ID is required.");
+  }
 
-  const response = await fetch(url, {
+  const response = await fetch(SC_VOTES_GRAPHQL_URL, {
+    method: "POST",
     headers: {
-      Accept: "text/csv"
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "x-elstats-tenant": "sc"
     },
-    redirect: "follow"
+    body: JSON.stringify({
+      operationName: "GetCandidate",
+      variables: {
+        candidateId: id
+      },
+      query: GET_CANDIDATE_QUERY
+    })
   });
 
   if (!response.ok) {
     throw new Error(
-      `SC Votes search download failed: ${response.status} ${response.statusText}`
+      `SC Votes candidate request failed: ${response.status} ${response.statusText}`
     );
   }
 
-  return response.text();
+  const payload = await response.json();
+
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    throw new Error(
+      `SC Votes GraphQL error: ${payload.errors
+        .map((error) => error?.message)
+        .filter(Boolean)
+        .join("; ")}`
+    );
+  }
+
+  return payload?.data?.candidate || null;
 }
 
 module.exports = {
-  buildSearchPayload,
-  downloadSearchCsv
+  getCandidateHistory
 };
