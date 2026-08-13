@@ -4,8 +4,7 @@ const helmet = require("helmet");
 const { checkPerson } = require("./services/checkPerson");
 const { checkCampaignCompliance } = require("./services/checkCampaignCompliance");
 const {
-  buildSearchPayload,
-  downloadSearchCsv
+  getCandidateHistory
 } = require("./services/electionHistoryService");
 
 
@@ -34,15 +33,8 @@ app.get("/health", (_req, res) => res.status(200).json({
 
 app.get("/test-election-history", async (_req, res, next) => {
   try {
-    const searchPayload = buildSearchPayload({
-      fromYear: 2022,
-      toYear: 2022,
-      candidateIds: [4576]
-    });
-
-    const csv = await downloadSearchCsv(searchPayload);
-
-    res.type("text/plain").send(csv);
+    const candidate = await getCandidateHistory(4576);
+    res.json(candidate);
   } catch (e) {
     next(e);
   }
