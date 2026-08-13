@@ -96,6 +96,9 @@ $('prepareBtn').addEventListener('click', async () => {
   const nameKey = $('nameColumn').value;
   const jurisdictionKey = $('jurisdictionColumn').value;
   const roleKey = $('roleColumn').value;
+  const electionDateKey = Object.keys(sourceRows[0] || {}).find(
+  key => normalizeWhitespace(key).toLowerCase() === 'election date'
+);
   const year = Number($('yearInput').value) || 2026;
 
   preparedRows = sourceRows.map((row, index) => ({
@@ -104,8 +107,11 @@ $('prepareBtn').addEventListener('click', async () => {
     __name: normalizeWhitespace(row[nameKey]),
     __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
     __role: normalizeWhitespace(row[roleKey]),
+    __electionDate: electionDateKey
+  ? normalizeWhitespace(row[electionDateKey])
+  : '',
     __surname: getSurname(row[nameKey]),
-    __year: year,
+        __year: year,
     __status: 'Pending',
     __matchedName: '',
     __notes: 'Waiting for backend response.'
@@ -166,10 +172,11 @@ if (validRows.length === 0) {
 }
     
 const people = validRows.map((row) => ({
-    name: row.__name,
-    jurisdiction: row.__jurisdiction,
+  name: row.__name,
+  jurisdiction: row.__jurisdiction,
   role: row.__role,
-    year
+  year,
+  electionDate: row.__electionDate || null
 }));
 
     const response = await fetch(`${API_BASE_URL}/check-batch`, {
