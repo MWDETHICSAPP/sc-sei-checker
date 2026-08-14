@@ -3,6 +3,10 @@ const {
   extractSurname
 } = require("../matching/names");
 
+const {
+  checkCampaignCompliance
+} = require("./checkCampaignCompliance");
+
 const POSITIONS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/All/Offices/Positions";
 
@@ -220,6 +224,14 @@ async function searchPublicSei({
 async function checkPerson(input) {
   const normalized = normalizePersonInput(input);
 
+  const normalizedRole = String(normalized.role || "")
+  .trim()
+  .toLowerCase();
+
+const requiresCampaignCheck =
+  normalizedRole.includes("elected") ||
+  normalizedRole.includes("candidate");
+
   if (!normalized.name) {
   return {
     input: normalized,
@@ -239,9 +251,26 @@ async function checkPerson(input) {
   const surname = extractSurname(normalized.name);
   const year = Number(normalized.year || 2026);
 
+  let campaignCompliance = null;
+
+if (requiresCampaignCheck) {
+  try {
+    campaignCompliance = await checkCampaignCompliance({
+      ...normalized,
+      reportingYear: year
+    });
+  } catch (error) {
+    console.error(
+      `Campaign compliance check failed for ${normalized.name}:`,
+      error.message
+    );
+  }
+}
+
   if (!surname) {
     return {
       input: normalized,
+      campaignCompliance,
       search: {
         surname: "",
         adapter: "sc-ethics-public-api"
@@ -282,6 +311,7 @@ async function checkPerson(input) {
   if (matches.length === 0) {
     return {
       input: normalized,
+      campaignCompliance,
       search: {
         surname,
         adapter: "sc-ethics-public-api"
@@ -301,6 +331,7 @@ async function checkPerson(input) {
 
     return {
       input: normalized,
+      campaignCompliance,
       search: {
         surname,
         adapter: "sc-ethics-public-api"
@@ -321,6 +352,7 @@ async function checkPerson(input) {
 
   return {
     input: normalized,
+    campaignCompliance,
     search: {
       surname,
       adapter: "sc-ethics-public-api"
