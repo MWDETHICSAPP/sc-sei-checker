@@ -306,7 +306,9 @@ if (profileSeedReport) {
   "CAMPAIGN PROFILE:",
   JSON.stringify(campaignProfile, null, 2)
 );
-  const requestedOffice = String(input?.office || "")
+  
+   
+   const requestedOffice = String(input?.office || "")
   .trim()
   .toLowerCase();
 
