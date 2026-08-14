@@ -317,7 +317,10 @@ $('exportBtn').addEventListener('click', () => {
     clean['SEI Search Surname'] = row.__surname;
     clean['Review Status'] = row.__status;
 clean['Manual Review Required'] = row.__status === 'Manual Review' ? 'Yes' : 'No';
-clean['Letter Required'] = row.__status === 'Not Filed' ? 'Yes' : 'No';
+clean['Letter Required'] =
+  Array.isArray(row.__deficiencies) && row.__deficiencies.length > 0
+    ? 'Yes'
+    : 'No';
 clean['Staff Notes'] = '';
     return clean;
   });
@@ -481,13 +484,13 @@ let deficiencyParagraphText = '';
 
 if (hasSeiDeficiency && hasCampaignDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Statements of Economic Interests and Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the deficiencies identified above were discovered.`;
+    `Continued delays in filing the required Statements of Economic Interests and Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the deficiencies identified below were discovered.`;
 } else if (hasSeiDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Statement of Economic Interests, the deficiency identified above was discovered.`;
+    `Continued delays in filing the required Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Statement of Economic Interests, the deficiency identified below was discovered.`;
 } else if (hasCampaignDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures, the deficiencies identified above were discovered.`;
+    `Continued delays in filing the required Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures, the deficiencies identified below were discovered.`;
 }
   
 const initialPenalty = deficiencyCount * 100;
@@ -615,6 +618,7 @@ const body = (text, options = {}) =>
         })
       ]
     });
+
 const deficiencyBox = (text) =>
   new Table({
     width: {
@@ -637,26 +641,31 @@ const deficiencyBox = (text) =>
               left: 120,
               right: 120
             },
-            children: [
-              new Paragraph({
-                spacing: {
-                  after: 0,
-                  line: 240
-                },
-                children: [
-                  new TextRun({
-                    text,
-                    font: 'Times New Roman',
-                    size: 24
+            children: String(text)
+              .split('\n')
+              .filter((line) => line.trim())
+              .map(
+                (line) =>
+                  new Paragraph({
+                    spacing: {
+                      after: 80,
+                      line: 240
+                    },
+                    children: [
+                      new TextRun({
+                        text: line,
+                        font: 'Times New Roman',
+                        size: 24
+                      })
+                    ]
                   })
-                ]
-              })
-            ]
+              )
           })
         ]
       })
     ]
   });
+  
   const recipientBlock = new Paragraph({
     spacing: { after: 200, line: 240 },
     children: [
@@ -725,7 +734,7 @@ const deficiencyBox = (text) =>
           
 blank(),
           
-        deficiencyBox(deficiencyBoxText),
+       
 
        
 
@@ -735,6 +744,7 @@ blank(),
 ), 
 
          body(deficiencyParagraphText),
+         deficiencyBox(deficiencyBoxText),
 
          body(
   `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of ${formattedPenalty} is hereby levied. If the required ${deficiencyCount === 1 ? 'report is' : 'reports are'} not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied.`
@@ -805,11 +815,13 @@ const generateLettersBtn = $('generateLettersBtn');
 if (generateLettersBtn) {
   generateLettersBtn.addEventListener('click', async () => {
     const letterRows = preparedRows.filter(
-      (row) => row.__status === 'Not Filed'
-    );
+  (row) =>
+    Array.isArray(row.__deficiencies) &&
+    row.__deficiencies.length > 0
+);
 
     if (!letterRows.length) {
-      alert('There are no Not Filed records requiring letters.');
+      alert('There are no deficiency records requiring letters.');
       return;
     }
 
@@ -827,7 +839,7 @@ if (generateLettersBtn) {
 
         downloadBlob(
           blob,
-          `${safeFileName(fullName)}_${filingYear}_SEI_Letter.docx`
+          `${safeFileName(fullName)}_${filingYear}_Compliance_Letter.docx`
         );
       }
 
