@@ -505,8 +505,13 @@ const electionYear =
         reportName.includes("initial") ||
         reportName.includes("pre-election");
 
-      const matchesElectionYear =
-        reportName.includes(electionYearText);
+     const reportElectionYear = String(
+  report?.electionYear || ""
+);
+
+const matchesElectionYear =
+  reportName.includes(electionYearText) ||
+  reportElectionYear === electionYearText;
 
       return isElectionRelated && matchesElectionYear;
     })
