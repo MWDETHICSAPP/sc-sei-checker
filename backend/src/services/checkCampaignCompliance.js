@@ -506,11 +506,20 @@ const relevantFilerIds = new Set(
     .filter(Boolean)
 );
 
+  const relevantCampaignIds = new Set(
+  relevantOfficeRuns
+    .map((office) => office?.campaignId)
+    .filter(Boolean)
+);
+
 const relevantReports = reportList.filter((report) => {
   const filerMatches =
     relevantFilerIds.has(report?.candidateFilerId);
 
-  if (!filerMatches) return false;
+  const campaignMatches =
+    relevantCampaignIds.has(report?.campaignId);
+
+  if (!filerMatches || !campaignMatches) return false;
 
   if (!requestedOffice) return true;
 
