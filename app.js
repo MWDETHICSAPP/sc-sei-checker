@@ -504,11 +504,12 @@ const letterDeficiencies = rawDeficiencies.map((deficiency) => {
 
   if (type === 'Campaign Disclosure') {
   const year = deficiency?.electionYear || '';
-  const dueDate = deficiency?.dueDate
+   const dueDate = deficiency?.dueDate
     ? new Date(deficiency.dueDate).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
+        timeZone: 'UTC'
       })
     : '';
 
