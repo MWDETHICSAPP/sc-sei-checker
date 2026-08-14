@@ -336,11 +336,24 @@ const searchResult = await searchPublicSei({
   }
 
   const matches = searchResult.matches;
-
+const campaignDeficiencies =
+  Array.isArray(campaignCompliance?.campaignDeficiencies)
+    ? campaignCompliance.campaignDeficiencies
+    : [];
+  
   if (matches.length === 0) {
     return {
       input: normalized,
       campaignCompliance,
+      deficiencies: [
+  {
+    type: "SEI",
+    filing: `${year} Statement of Economic Interests`,
+    status: "Missing",
+    year
+  },
+  ...campaignDeficiencies
+],
       search: {
         surname,
         adapter: "sc-ethics-public-api"
@@ -361,6 +374,7 @@ const searchResult = await searchPublicSei({
     return {
       input: normalized,
       campaignCompliance,
+      deficiencies: campaignDeficiencies,
       search: {
         surname,
         adapter: "sc-ethics-public-api"
@@ -379,9 +393,11 @@ const searchResult = await searchPublicSei({
     };
   }
 
+  
   return {
     input: normalized,
     campaignCompliance,
+    deficiencies: campaignDeficiencies,
     search: {
       surname,
       adapter: "sc-ethics-public-api"
@@ -401,7 +417,7 @@ const searchResult = await searchPublicSei({
     notes:
       `${matches.length} possible ${year} filing matches ` +
       "were found. Confirm the filer manually."
-  };
+  };  
 }
 
 module.exports = { checkPerson };
