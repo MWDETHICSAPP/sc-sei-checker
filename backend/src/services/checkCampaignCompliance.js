@@ -639,10 +639,18 @@ timely:
  const campaignDeficiencies = [];
 
 if (electionYear && !hasInitialReport) {
+  const initialDueDate = input?.electionDate
+    ? new Date(new Date(input.electionDate).getTime() - 15 * 24 * 60 * 60 * 1000)
+    : null;
+
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
     filing: "Initial Report",
-    electionYear
+    electionYear,
+    dueDate: initialDueDate
+      ? initialDueDate.toISOString()
+      : null,
+    electionDate: input?.electionDate || null
   });
 }
 
