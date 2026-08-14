@@ -608,6 +608,36 @@ timely:
   enforcementCutoffReached = true;
 }
 }
+ const campaignDeficiencies = [];
+
+if (electionYear && !hasInitialReport) {
+  campaignDeficiencies.push({
+    type: "Campaign Disclosure",
+    filing: "Initial Report",
+    electionYear
+  });
+}
+
+if (electionYear && !hasPreElectionReport) {
+  campaignDeficiencies.push({
+    type: "Campaign Disclosure",
+    filing: "Pre-Election Report",
+    electionYear
+  });
+}
+
+for (const report of evaluatedQuarterlyReports) {
+  if (report.timely === false) {
+    campaignDeficiencies.push({
+      type: "Campaign Disclosure",
+      filing: report.reportName,
+      dueDate: report.dueDate,
+      filedDate: report.originalSubmittedDate,
+      electionYear: report.electionYear
+    });
+  }
+}
+  
   return {
     input,
     status: "Search Complete",
@@ -621,6 +651,7 @@ hasInitialReport,
 hasPreElectionReport,
     reportsWithinFourYears,
     evaluatedQuarterlyReports,
+    campaignDeficiencies,
     notes: "Campaign disclosure reports retrieved from the public filing system."
   };
 }
