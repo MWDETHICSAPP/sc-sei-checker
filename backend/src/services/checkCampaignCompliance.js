@@ -486,6 +486,42 @@ const relevantReports = reportList.filter((report) => {
       .toLowerCase() === requestedOffice
   );
 });
+  
+  const electionDate = input?.electionDate
+  ? new Date(input.electionDate)
+  : null;
+
+const electionYear =
+  electionDate && !Number.isNaN(electionDate.getTime())
+    ? electionDate.getFullYear()
+    : null;
+
+  const electionRelatedReports = electionYear
+  ? relevantReports.filter((report) => {
+      const reportName = String(report?.reportName || "").toLowerCase();
+
+      return (
+        String(report?.electionYear || "") === String(electionYear) &&
+        (
+          reportName.includes("initial") ||
+          reportName.includes("pre-election")
+        )
+      );
+    })
+  : [];
+
+  const hasInitialReport = electionRelatedReports.some((report) =>
+  String(report?.reportName || "")
+    .toLowerCase()
+    .includes("initial")
+);
+
+const hasPreElectionReport = electionRelatedReports.some((report) =>
+  String(report?.reportName || "")
+    .toLowerCase()
+    .includes("pre-election")
+);
+  
   const reportsWithinFourYears = relevantReports.filter((report) => {
   const dueDate = getQuarterlyDueDate(report?.reportName);
 
@@ -537,6 +573,9 @@ timely:
     campaignProfile,
     relevantOfficeRuns,
 relevantReports,
+    electionRelatedReports,
+hasInitialReport,
+hasPreElectionReport,
     reportsWithinFourYears,
     evaluatedQuarterlyReports,
     notes: "Campaign disclosure reports retrieved from the public filing system."
