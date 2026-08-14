@@ -75,14 +75,21 @@ function getQuarterlyDueDate(reportName) {
 function getPreElectionDueDate(electionDate) {
   if (!electionDate) return null;
 
-  const election = new Date(electionDate);
+  const electionDateText = String(electionDate).trim();
+  const parts = electionDateText.split('/');
 
-  if (Number.isNaN(election.getTime())) {
+  if (parts.length !== 3) {
     return null;
   }
 
-  const dueDate = new Date(election);
-  dueDate.setDate(dueDate.getDate() - 15);
+  const [month, day, year] = parts.map(Number);
+
+  if (!month || !day || !year) {
+    return null;
+  }
+
+  const dueDate = new Date(Date.UTC(year, month - 1, day));
+  dueDate.setUTCDate(dueDate.getUTCDate() - 15);
 
   return dueDate;
 }
@@ -639,9 +646,19 @@ timely:
  const campaignDeficiencies = [];
 
 if (electionYear && !hasInitialReport) {
-  const initialDueDate = input?.electionDate
-    ? new Date(new Date(input.electionDate).getTime() - 15 * 24 * 60 * 60 * 1000)
-    : null;
+  let initialDueDate = null;
+
+if (input?.electionDate) {
+  const electionDateText = String(input.electionDate).trim();
+  const parts = electionDateText.split('/');
+
+  if (parts.length === 3) {
+    const [month, day, year] = parts.map(Number);
+
+    initialDueDate = new Date(Date.UTC(year, month - 1, day));
+    initialDueDate.setUTCDate(initialDueDate.getUTCDate() - 15);
+  }
+}
 
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
