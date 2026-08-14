@@ -224,6 +224,24 @@ const people = validRows.map((row) => ({
       row.__deficiencies = Array.isArray(result.deficiencies)
   ? result.deficiencies
   : [];
+      const campaignOfficeNames = Array.isArray(
+  result.campaignCompliance?.relevantOfficeRuns
+)
+  ? [
+      ...new Set(
+        result.campaignCompliance.relevantOfficeRuns
+          .map((run) => String(run?.name || '').trim())
+          .filter(Boolean)
+      )
+    ]
+  : [];
+
+  row.__campaignOffice =
+  campaignOfficeNames.length === 1
+    ? campaignOfficeNames[0]
+    : '';    
+
+
     });
 
     renderRows(preparedRows);
