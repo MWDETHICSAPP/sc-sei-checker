@@ -6,7 +6,8 @@ function normalizePersonInput(input = {}) {
     name: cleanText(input.name),
     jurisdiction: cleanText(input.jurisdiction || input.county || input.entity || ""),
     role: cleanText(input.role),
-    year: Number.isInteger(yearNumber) && yearNumber >= 2000 && yearNumber <= 2100 ? yearNumber : 2026
+electionDate: cleanText(input.electionDate),
+year: Number.isInteger(yearNumber) && yearNumber >= 2000 && yearNumber <= 2100 ? yearNumber : 2026
   };
 }
 function extractSurname(fullName) {
