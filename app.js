@@ -334,16 +334,6 @@ $('notFiledCount').textContent = preparedRows.reduce(
 );
 }
 
-$('filterInput').addEventListener('input', (event) => {
-  const q = event.target.value.toLowerCase().trim();
-  const rows = q
-    ? preparedRows.filter((r) =>
-        `${r.__name} ${r.__jurisdiction} ${r.__surname}`.toLowerCase().includes(q)
-      )
-    : preparedRows;
-
-  renderRows(rows);
-});
 
 $('exportBtn').addEventListener('click', () => {
   if (!preparedRows.length) return;
