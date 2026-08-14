@@ -220,10 +220,29 @@ const people = validRows.map((row) => ({
       row.__surname = result.search?.surname || row.__surname;
       row.__matchedName = result.matchedFilingName || '';
       row.__filedDate = result.filedDate || '';
-      row.__notes = result.notes || '';
       row.__deficiencies = Array.isArray(result.deficiencies)
   ? result.deficiencies
   : [];
+
+if (row.__deficiencies.length > 0) {
+  row.__notes =
+    'Deficiencies: ' +
+    row.__deficiencies
+      .map((deficiency) => {
+        const filing = String(deficiency?.filing || '').trim();
+        const year =
+          deficiency?.electionYear &&
+          !filing.includes(String(deficiency.electionYear))
+            ? ` (${deficiency.electionYear})`
+            : '';
+
+        return `${filing}${year}`;
+      })
+      .filter(Boolean)
+      .join('; ');
+} else {
+  row.__notes = result.notes || '';
+}
       const campaignOfficeNames = Array.isArray(
   result.campaignCompliance?.relevantOfficeRuns
 )
