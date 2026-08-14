@@ -292,6 +292,7 @@ if (requiresCampaignCheck) {
   if (searchResult.positionLookupFailed) {
     return {
       input: normalized,
+      campaignCompliance,
       search: {
         surname,
         adapter: "sc-ethics-public-api"
