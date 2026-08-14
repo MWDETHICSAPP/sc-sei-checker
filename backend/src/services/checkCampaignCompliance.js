@@ -496,17 +496,19 @@ const electionYear =
     ? electionDate.getFullYear()
     : null;
 
-  const electionRelatedReports = electionYear
+ const electionRelatedReports = electionYear
   ? relevantReports.filter((report) => {
       const reportName = String(report?.reportName || "").toLowerCase();
+      const electionYearText = String(electionYear);
 
-      return (
-        String(report?.electionYear || "") === String(electionYear) &&
-        (
-          reportName.includes("initial") ||
-          reportName.includes("pre-election")
-        )
-      );
+      const isElectionRelated =
+        reportName.includes("initial") ||
+        reportName.includes("pre-election");
+
+      const matchesElectionYear =
+        reportName.includes(electionYearText);
+
+      return isElectionRelated && matchesElectionYear;
     })
   : [];
 
