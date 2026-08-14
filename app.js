@@ -484,13 +484,13 @@ let deficiencyParagraphText = '';
 
 if (hasSeiDeficiency && hasCampaignDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Statements of Economic Interests and Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the deficiencies identified below were discovered.`;
+    `Continued delays in filing the required Statements of Economic Interests and Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the deficiencies identified below were discovered:`;
 } else if (hasSeiDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Statement of Economic Interests, the deficiency identified below was discovered.`;
+    `Continued delays in filing the required Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Statement of Economic Interests, the deficiency identified below was discovered:`;
 } else if (hasCampaignDeficiency) {
   deficiencyParagraphText =
-    `Continued delays in filing the required Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures, the deficiencies identified below were discovered.`;
+    `Continued delays in filing the required Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures, the deficiencies identified below were discovered:`;
 }
   
 const initialPenalty = deficiencyCount * 100;
