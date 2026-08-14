@@ -418,11 +418,78 @@ function buildAnnualSeiWordDocument(row) {
   const filingYear = row.__year || new Date().getFullYear();
 const selectedSigner = getSelectedLetterSigner();
 
+const rawDeficiencies = Array.isArray(row.__deficiencies)
+  ? row.__deficiencies
+  : [];
+
+const letterDeficiencies = rawDeficiencies.map((deficiency) => {
+  const type = String(deficiency?.type || '').trim();
+  const filing = String(deficiency?.filing || '').trim();
+
+  if (type === 'SEI') {
+    return {
+      ...deficiency,
+      category: 'SEI',
+      text:
+        filing ||
+        `${filingYear} Statement of Economic Interests`
+    };
+  }
+
+  if (type === 'Campaign Disclosure') {
+    return {
+      ...deficiency,
+      category: 'Campaign Disclosure',
+      text:
+        filing +
+        (deficiency?.electionYear
+          ? ` (${deficiency.electionYear})`
+          : '')
+    };
+  }
+
+  return {
+    ...deficiency,
+    category: type || 'Other',
+    text: filing || 'Required filing'
+  };
+});
+
+row.__letterDeficiencies = letterDeficiencies;
+
 const deficiencyCount =
-  Array.isArray(row.__letterDeficiencies) && row.__letterDeficiencies.length
-    ? row.__letterDeficiencies.length
+  letterDeficiencies.length > 0
+    ? letterDeficiencies.length
     : 1;
 
+const deficiencyBoxText =
+  letterDeficiencies.length > 0
+    ? letterDeficiencies.map((deficiency) => deficiency.text).join('\n')
+    : `${filingYear} Statement of Economic Interests`;
+
+  const hasSeiDeficiency =
+  letterDeficiencies.some(
+    (deficiency) => deficiency.category === 'SEI'
+  );
+
+const hasCampaignDeficiency =
+  letterDeficiencies.some(
+    (deficiency) => deficiency.category === 'Campaign Disclosure'
+  );
+
+let deficiencyParagraphText = '';
+
+if (hasSeiDeficiency && hasCampaignDeficiency) {
+  deficiencyParagraphText =
+    `Continued delays in filing the required Statements of Economic Interests and Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the deficiencies identified above were discovered.`;
+} else if (hasSeiDeficiency) {
+  deficiencyParagraphText =
+    `Continued delays in filing the required Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Statement of Economic Interests, the deficiency identified above was discovered.`;
+} else if (hasCampaignDeficiency) {
+  deficiencyParagraphText =
+    `Continued delays in filing the required Campaign Disclosures could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures, the deficiencies identified above were discovered.`;
+}
+  
 const initialPenalty = deficiencyCount * 100;
 
 const formattedPenalty = initialPenalty.toLocaleString('en-US', {
@@ -658,9 +725,7 @@ const deficiencyBox = (text) =>
           
 blank(),
           
-          deficiencyBox(
-  `The ${filingYear} Statement of Economic Interests, which was due on ${dueDate}, has not been filed.`
-),
+        deficiencyBox(deficiencyBoxText),
 
        
 
@@ -669,13 +734,11 @@ blank(),
            { before: 120 }
 ), 
 
-          body(
-            `Continued delays in filing the ${filingYear} Statement of Economic Interests could result in accrual of late filing penalties with a maximum penalty of $5,000.00. While reviewing your Campaign Disclosures and Statements of Economic Interests, the following deficiencies were discovered:`
-          ),
+         body(deficiencyParagraphText),
 
-          body(
-            `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of ${formattedPenalty} is hereby levied. If the required report is not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied at $10 per day per report for the first ten days and $100 per day per report for each additional day until the penalty reaches $5,000 per report, and a complaint could be filed against you.`
-          ),
+         body(
+  `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of ${formattedPenalty} is hereby levied. If the required ${deficiencyCount === 1 ? 'report is' : 'reports are'} not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied.`
+),
 
           body(
             `If extenuating circumstances prevented you from filing the reports as required, you may file a written appeal of this late filing penalty. To file an appeal, you must do the following within ten (10) days of receipt of this letter:`
