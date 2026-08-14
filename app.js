@@ -305,7 +305,14 @@ function updateStats() {
   $('totalCount').textContent = preparedRows.length;
   $('filedCount').textContent = preparedRows.filter((r) => r.__status === 'Filed').length;
   $('reviewCount').textContent = preparedRows.filter((r) => r.__status === 'Manual Review').length;
-  $('notFiledCount').textContent = preparedRows.filter((r) => r.__status === 'Not Filed').length;
+$('notFiledCount').textContent = preparedRows.reduce(
+  (total, row) =>
+    total +
+    (Array.isArray(row.__deficiencies)
+      ? row.__deficiencies.length
+      : 0),
+  0
+);
 }
 
 $('filterInput').addEventListener('input', (event) => {
