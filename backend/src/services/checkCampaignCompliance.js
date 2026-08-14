@@ -290,9 +290,37 @@ const candidate = String(
   const reports = await response.json();
 const reportList = Array.isArray(reports) ? reports : [];
 
-const profileSeedReport = reportList.find(
-  (report) => report?.candidateFilerId && report?.seiFilerId
-);
+const candidateNameParts = candidateName
+  .toLowerCase()
+  .replace(/[.,]/g, " ")
+  .split(/\s+/)
+  .filter(
+    (part) =>
+      part &&
+      !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
+      part.length > 1
+  );
+
+const profileSeedReport = reportList.find((report) => {
+  if (!report?.candidateFilerId || !report?.seiFilerId) {
+    return false;
+  }
+
+  const reportNameParts = String(report?.candidateName || "")
+    .toLowerCase()
+    .replace(/[.,]/g, " ")
+    .split(/\s+/)
+    .filter(
+      (part) =>
+        part &&
+        !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
+        part.length > 1
+    );
+
+  return candidateNameParts.every((part) =>
+    reportNameParts.includes(part)
+  );
+});
 
 let campaignProfile = null;
 
