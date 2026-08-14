@@ -297,7 +297,10 @@ async function getOriginalSubmissionDate(reportId) {
 }
 async function getCampaignFundEndingBalance(reportId) {
   const detail = await getCampaignReportDetail(reportId);
-
+console.log(
+  "CAMPAIGN REPORT DETAIL TOTALS:",
+  JSON.stringify(detail?.overview?.totals, null, 2)
+);
   if (!detail) return null;
 
   const totals = Array.isArray(detail?.overview?.totals)
