@@ -338,7 +338,36 @@ clean['Manual Review Required'] = row.__status === 'Manual Review' ? 'Yes' : 'No
 clean['Letter Required'] =
   Array.isArray(row.__deficiencies) && row.__deficiencies.length > 0
     ? 'Yes'
-    : 'No';
+    : 'No';const campaignDeficiencies = Array.isArray(row.__deficiencies)
+  ? row.__deficiencies.filter(
+      (deficiency) => deficiency?.type === 'Campaign Disclosure'
+    )
+  : [];
+
+clean['Campaign Disclosure Deficiencies'] = campaignDeficiencies
+  .map((deficiency) => {
+    const filing = String(deficiency?.filing || '').trim();
+    const year = deficiency?.electionYear
+      ? ` (${deficiency.electionYear})`
+      : '';
+
+    return `${filing}${year}`;
+  })
+  .filter(Boolean)
+  .join('; ');
+
+clean['Campaign Disclosure Due Dates'] = campaignDeficiencies
+  .map((deficiency) => deficiency?.dueDate || '')
+  .filter(Boolean)
+  .join('; ');
+
+clean['Campaign Disclosure Filed Dates'] = campaignDeficiencies
+  .map((deficiency) => deficiency?.filedDate || '')
+  .filter(Boolean)
+  .join('; ');
+
+
+    
 clean['Staff Notes'] = '';
     return clean;
   });
