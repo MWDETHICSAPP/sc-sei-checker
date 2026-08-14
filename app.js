@@ -820,8 +820,8 @@ blank(),
          body(deficiencyParagraphText),
          deficiencyBox(deficiencyBoxText),
 
-         body(
-  `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of ${formattedPenalty} is hereby levied. If the required ${deficiencyCount === 1 ? 'report is' : 'reports are'} not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied.`
+       body(
+  `In accordance with Section 8-13-1510, South Carolina Code Ann., 1976, as amended, a late filing penalty of $100.00 per late or missing filing, totaling ${formattedPenalty}, is hereby levied. If the required ${deficiencyCount === 1 ? 'report is' : 'reports are'} not filed electronically within ten calendar days of receipt of this letter, additional penalties could be levied.`
 ),
 
           body(
