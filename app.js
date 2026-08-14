@@ -708,9 +708,20 @@ const deficiencyBox = (text) =>
     ]
   });
 
-  const roleDescription = jurisdiction
-    ? `${position} for ${jurisdiction}`
-    : position;
+ const campaignOffice =
+  normalizeWhitespace(row.__campaignOffice || '');
+
+const positionDescription = campaignOffice
+  ? `member of ${campaignOffice}`
+  : position;
+
+const roleDescription =
+  !campaignOffice && jurisdiction
+    ? `${positionDescription} for ${jurisdiction}`
+    : positionDescription;
+
+const roleArticle =
+  /^[aeiou]/i.test(roleDescription.trim()) ? 'an' : 'a';
 
   
   
@@ -757,7 +768,7 @@ blank(),
        
 
           body(
-            `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As a ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`,
+            `This is not a form letter. You are receiving this letter because you are currently in violation of the Ethics Reform Act. As ${roleArticle} ${roleDescription}, you are subject to the Ethics Reform Act, which is the body of laws that govern public officials, public members, and public employees.`,
            { before: 120 }
 ), 
 
