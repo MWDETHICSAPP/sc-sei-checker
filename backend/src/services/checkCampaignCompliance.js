@@ -406,9 +406,39 @@ const scVotesCandidatesWithMatchingOffice = scVotesCandidates.filter(
 const scVotesElectionContests =
   scVotesCandidatesWithMatchingOffice.length === 1
     ? scVotesCandidatesWithMatchingOffice[0].history.contests.filter(
-        (entry) =>
-          entry?.contest?.office?.name &&
-          entry?.contest?.event?.startDate
+        (entry) => {
+          if (
+            !entry?.contest?.office?.name ||
+            !entry?.contest?.event?.startDate
+          ) {
+            return false;
+          }
+
+          if (!input?.electionDate) {
+            return true;
+          }
+
+          const uploadedElectionDate = new Date(input.electionDate);
+          const scVotesElectionDate = new Date(
+            entry.contest.event.startDate
+          );
+
+          if (
+            Number.isNaN(uploadedElectionDate.getTime()) ||
+            Number.isNaN(scVotesElectionDate.getTime())
+          ) {
+            return true;
+          }
+
+          return (
+            uploadedElectionDate.getFullYear() ===
+              scVotesElectionDate.getFullYear() &&
+            uploadedElectionDate.getMonth() ===
+              scVotesElectionDate.getMonth() &&
+            uploadedElectionDate.getDate() ===
+              scVotesElectionDate.getDate()
+          );
+        }
       )
     : [];
   
