@@ -389,6 +389,18 @@ const ethicsOfficeNames = new Set(
     .filter(Boolean)
 );
 
+const scVotesCandidatesWithMatchingOffice = scVotesCandidates.filter(
+  ({ history }) =>
+    Array.isArray(history?.contests) &&
+    history.contests.some((entry) =>
+      ethicsOfficeNames.has(
+        String(entry?.contest?.office?.name || "")
+          .trim()
+          .toLowerCase()
+      )
+    )
+);
+  
 const scVotesElectionContests =
   scVotesCandidatesWithMatchingOffice
     .flatMap(({ history }) =>
