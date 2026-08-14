@@ -389,17 +389,46 @@ const ethicsOfficeNames = new Set(
     .filter(Boolean)
 );
 
-const scVotesCandidatesWithMatchingOffice = scVotesCandidates.filter(
-  ({ history }) =>
-    Array.isArray(history?.contests) &&
-    history.contests.some((entry) =>
-      ethicsOfficeNames.has(
-        String(entry?.contest?.office?.name || "")
-          .trim()
-          .toLowerCase()
-      )
+const scVotesElectionContests =
+  scVotesCandidatesWithMatchingOffice
+    .flatMap(({ history }) =>
+      Array.isArray(history?.contests)
+        ? history.contests
+        : []
     )
-);  
+    .filter((entry) => {
+      if (
+        !entry?.contest?.office?.name ||
+        !entry?.contest?.event?.startDate
+      ) {
+        return false;
+      }
+
+      if (!input?.electionDate) {
+        return true;
+      }
+
+      const uploadedElectionDate = new Date(input.electionDate);
+      const scVotesElectionDate = new Date(
+        entry.contest.event.startDate
+      );
+
+      if (
+        Number.isNaN(uploadedElectionDate.getTime()) ||
+        Number.isNaN(scVotesElectionDate.getTime())
+      ) {
+        return true;
+      }
+
+      return (
+        uploadedElectionDate.getFullYear() ===
+          scVotesElectionDate.getFullYear() &&
+        uploadedElectionDate.getMonth() ===
+          scVotesElectionDate.getMonth() &&
+        uploadedElectionDate.getDate() ===
+          scVotesElectionDate.getDate()
+      );
+    });
 
 
 
