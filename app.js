@@ -221,6 +221,9 @@ const people = validRows.map((row) => ({
       row.__matchedName = result.matchedFilingName || '';
       row.__filedDate = result.filedDate || '';
       row.__notes = result.notes || '';
+      row.__deficiencies = Array.isArray(result.deficiencies)
+  ? result.deficiencies
+  : [];
     });
 
     renderRows(preparedRows);
