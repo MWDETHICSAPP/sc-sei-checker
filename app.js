@@ -503,16 +503,31 @@ const letterDeficiencies = rawDeficiencies.map((deficiency) => {
   }
 
   if (type === 'Campaign Disclosure') {
-    return {
-      ...deficiency,
-      category: 'Campaign Disclosure',
-      text:
-        filing +
-        (deficiency?.electionYear
-          ? ` (${deficiency.electionYear})`
-          : '')
-    };
+  const year = deficiency?.electionYear || '';
+  const dueDate = deficiency?.dueDate
+    ? new Date(deficiency.dueDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    : '';
+
+  let text = filing + (year ? ` (${year})` : '');
+
+  if (filing === 'Initial Report' && dueDate) {
+    text = `A ${year} Initial Campaign Disclosure, which was due no later than ${dueDate}, has not been filed.`;
   }
+
+  if (filing === 'Pre-Election Report' && dueDate) {
+    text = `A ${year} Pre-Election Campaign Disclosure, which was due on ${dueDate}, has not been filed.`;
+  }
+
+  return {
+    ...deficiency,
+    category: 'Campaign Disclosure',
+    text
+  };
+}
 
   return {
     ...deficiency,
