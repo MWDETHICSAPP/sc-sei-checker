@@ -283,11 +283,39 @@ if (requiresCampaignCheck) {
     };
   }
 
-  const searchResult = await searchPublicSei({
-    surname,
-    jurisdiction: normalized.jurisdiction,
-    year
-  });
+  const normalizedJurisdiction = normalizeText(
+  normalized.jurisdiction
+);
+
+const isStatewideJurisdiction = [
+  "south carolina",
+  "state of south carolina",
+  "statewide"
+].includes(normalizedJurisdiction);
+
+const statewideOfficeNames =
+  isStatewideJurisdiction &&
+  Array.isArray(campaignCompliance?.relevantOfficeRuns)
+    ? [
+        ...new Set(
+          campaignCompliance.relevantOfficeRuns
+            .map((run) => String(run?.name || "").trim())
+            .filter(Boolean)
+        )
+      ]
+    : [];
+
+const seiJurisdiction =
+  isStatewideJurisdiction &&
+  statewideOfficeNames.length === 1
+    ? statewideOfficeNames[0]
+    : normalized.jurisdiction;
+
+const searchResult = await searchPublicSei({
+  surname,
+  jurisdiction: seiJurisdiction,
+  year
+});
 
   if (searchResult.positionLookupFailed) {
     return {
