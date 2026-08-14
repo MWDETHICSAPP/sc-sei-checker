@@ -540,7 +540,9 @@ const electionYear =
         reportName.includes("pre-election");
 
      const reportElectionYear = String(
-  report?.electionYear || ""
+  report?.electionYear ??
+  report?.electionyear ??
+  ""
 );
 
 const matchesElectionYear =
