@@ -302,6 +302,7 @@ const candidate = String(
     body: JSON.stringify({
       candidate,
       office: input?.office || "",
+      electionYear: reportingYear,
       reportType: input?.reportType || "Any",
       electionType: input?.electionType || "Any",
         })
