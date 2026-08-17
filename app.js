@@ -79,6 +79,44 @@ function normalizeWhitespace(value) {
   return String(value ?? '').trim().replace(/\s+/g, ' ');
 }
 
+function normalizeElectionDate(value) {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  // Excel stores dates as serial numbers (for example, 45601 = 11/5/2024).
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const excelEpoch = Date.UTC(1899, 11, 30);
+    const date = new Date(excelEpoch + value * 86400000);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString().slice(0, 10);
+    }
+  }
+
+  const text = String(value).trim();
+
+  // Handle numeric Excel dates that may already have been converted to strings.
+  if (/^\d{5}$/.test(text)) {
+    const serial = Number(text);
+    const excelEpoch = Date.UTC(1899, 11, 30);
+    const date = new Date(excelEpoch + serial * 86400000);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString().slice(0, 10);
+    }
+  }
+
+  const date = new Date(text);
+
+  if (!Number.isNaN(date.getTime())) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  return text;
+}
+
+
 function getSurname(fullName) {
   const clean = normalizeWhitespace(fullName)
     .replace(/^(hon\.?|dr\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '')
@@ -108,8 +146,8 @@ $('prepareBtn').addEventListener('click', async () => {
     __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
     __role: normalizeWhitespace(row[roleKey]),
     __electionDate: electionDateKey
-  ? normalizeWhitespace(row[electionDateKey])
-  : '',
+  ? normalizeElectionDate(row[electionDateKey])
+  : "",
     __surname: getSurname(row[nameKey]),
         __year: year,
     __status: 'Pending',
