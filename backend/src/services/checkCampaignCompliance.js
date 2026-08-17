@@ -319,8 +319,14 @@ const candidate = String(
   const reports = await response.json();
 const reportList = Array.isArray(reports) ? reports : [];
 console.log(
-  "RAW REPORT LIST:",
-  JSON.stringify(reportList, null, 2)
+  "RAW REPORT SUMMARY:",
+  reportList.map((report) => ({
+    candidateFilerId: report?.candidateFilerId,
+    campaignId: report?.campaignId,
+    office: report?.office,
+    reportName: report?.reportName,
+    electionYear: report?.electionYear
+  }))
 );
   
 const candidateNameParts = candidateName
