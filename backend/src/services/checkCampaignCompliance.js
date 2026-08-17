@@ -558,7 +558,7 @@ const relevantReports = reportList.filter((report) => {
   const campaignMatches =
     relevantCampaignIds.has(report?.campaignId);
 
-  if (!filerMatches || !campaignMatches) return false;
+ if (!filerMatches) return false;
 
   if (!requestedOffice) return true;
 
