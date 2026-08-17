@@ -318,7 +318,11 @@ const candidate = String(
 
   const reports = await response.json();
 const reportList = Array.isArray(reports) ? reports : [];
-
+console.log(
+  "RAW REPORT LIST:",
+  JSON.stringify(reportList, null, 2)
+);
+  
 const candidateNameParts = candidateName
   .toLowerCase()
   .replace(/[.,]/g, " ")
