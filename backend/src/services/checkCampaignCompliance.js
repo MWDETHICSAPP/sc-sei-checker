@@ -588,6 +588,22 @@ const matchesElectionYear =
     })
   : [];
 
+console.log(
+  "RELEVANT REPORTS:",
+  JSON.stringify(relevantReports, null, 2)
+);
+
+console.log(
+  "ELECTION RELATED REPORTS:",
+  JSON.stringify(electionRelatedReports, null, 2)
+);
+
+const hasInitialReport = electionRelatedReports.some((report) =>
+  String(report?.reportName || "")
+    .toLowerCase()
+    .includes("initial")
+);
+  
   console.log(
   "ELECTION RELATED REPORTS:",
   JSON.stringify(electionRelatedReports, null, 2)
