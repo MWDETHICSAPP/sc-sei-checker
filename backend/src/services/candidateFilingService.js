@@ -231,7 +231,7 @@ return {
 }
 
 module.exports = {
-  getElectionsByDate
+  getElectionsByDate,
   searchCandidateFilings,
   getCandidateFilingDetail
 };
