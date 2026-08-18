@@ -165,7 +165,7 @@ async function searchCandidateFilings({
   ? "/Candidate/CandidateSearch/"
   : "/Candidate/CandidateSearchDate/";
   const response = await fetch(
-    `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateSearch/`,
+  `${SC_VOTES_CANDIDATE_BASE_URL}${searchPath}`,
     {
       method: "POST",
       headers: {
