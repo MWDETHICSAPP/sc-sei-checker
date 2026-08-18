@@ -97,6 +97,28 @@ async function searchCandidateFilings({
   return parseCandidateSearchResults(html, electionId);
 }
 
+function extractDetailField(html, label) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const pattern = new RegExp(
+    `<span[^>]*>\\s*${escapedLabel}:?\\s*<\\/span>\\s*<span[^>]*>([\\s\\S]*?)<\\/span>`,
+    "i"
+  );
+
+  const match = String(html || "").match(pattern);
+
+  if (!match) {
+    return "";
+  }
+
+  return match[1]
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function getCandidateFilingDetail({
   candidateId,
   electionId
@@ -120,7 +142,20 @@ async function getCandidateFilingDetail({
     );
   }
 
-  return response.text();
+ const html = await response.text();
+
+return {
+  candidateId: Number(candidateId),
+  electionId: Number(electionId),
+  candidateName: extractDetailField(html, "Candidate"),
+  election: extractDetailField(html, "Election"),
+  office: extractDetailField(html, "Office"),
+  county: extractDetailField(html, "County"),
+  party: extractDetailField(html, "Party"),
+  address: extractDetailField(html, "Address"),
+  status: extractDetailField(html, "Status"),
+  dateFiled: extractDetailField(html, "Date Filed")
+};
 }
 
 module.exports = {
