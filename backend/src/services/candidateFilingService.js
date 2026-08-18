@@ -406,6 +406,6 @@ module.exports = {
   searchCandidateFilings,
   getCandidateFilingDetail,
   getCandidateFilingExport,
-  parseCandidateFilingExport
+  parseCandidateFilingExport,
   findMatchingCandidateExportRow
 };
