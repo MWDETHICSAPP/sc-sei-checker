@@ -668,9 +668,24 @@ timely:
   enforcementCutoffReached = true;
 }
 }
+
+  const hasPriorCampaignReporting = relevantReports.some((report) => {
+  if (!electionDate || Number.isNaN(electionDate.getTime())) return false;
+
+  const lastUpdated = new Date(report?.lastUpdated);
+
+  return (
+    !Number.isNaN(lastUpdated.getTime()) &&
+    lastUpdated < electionDate
+  );
+});
  const campaignDeficiencies = [];
 
-if (electionYear && !hasInitialReport) {
+if (
+  electionYear &&
+  !hasInitialReport &&
+  !hasPriorCampaignReporting
+) {
   let initialDueDate = null;
 
 if (input?.electionDate) {
