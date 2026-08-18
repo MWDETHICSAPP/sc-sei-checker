@@ -54,6 +54,68 @@ function parseCandidateSearchResults(html, electionId) {
   return results;
 }
 
+async function getElectionsByDate(electionDate) {
+  const value = String(electionDate || "").trim();
+
+  if (!value) {
+    return [];
+  }
+
+  let formattedDate = value;
+
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoMatch) {
+    formattedDate = `${isoMatch[2]}/${isoMatch[3]}/${isoMatch[1]}`;
+  }
+
+  const response = await fetch(
+    `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateSearchDate?electionDate=${encodeURIComponent(
+      `${formattedDate} 00:00:00`
+    )}`,
+    {
+      headers: {
+        Accept: "text/html"
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `SC Votes election date lookup failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const html = await response.text();
+
+  const selectMatch = html.match(
+    /<select[^>]*id="SelectedElections"[^>]*>([\s\S]*?)<\/select>/i
+  );
+
+  if (!selectMatch) {
+    return [];
+  }
+
+  const elections = [];
+  const optionPattern =
+    /<option[^>]*value="(\d+)"[^>]*>([\s\S]*?)<\/option>/gi;
+
+  let match;
+
+  while ((match = optionPattern.exec(selectMatch[1])) !== null) {
+    elections.push({
+      electionId: Number(match[1]),
+      electionName: match[2]
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/\s+/g, " ")
+        .trim()
+    });
+  }
+
+  return elections;
+}
+
 async function searchCandidateFilings({
   electionId,
   electionDate = "",
@@ -169,6 +231,7 @@ return {
 }
 
 module.exports = {
+  getElectionsByDate
   searchCandidateFilings,
   getCandidateFilingDetail
 };
