@@ -56,23 +56,26 @@ function parseCandidateSearchResults(html, electionId) {
 
 async function searchCandidateFilings({
   electionId,
+  electionDate = "",
   firstName = "",
   lastName = ""
 }) {
-  if (!electionId || !lastName) {
+  if ((!electionId && !electionDate) || !lastName) {
     return [];
   }
 
   const form = new URLSearchParams();
 
-  form.set("ElectionId", String(electionId));
+  form.set("ElectionId", electionId ? String(electionId) : "");
+form.set("ElectionDate", electionDate || "");
+
   form.set("SelectedOffice", "-1");
   form.set("SelectedCandidateStatus", "All");
   form.set("CandidateFirstName", firstName);
   form.set("CandidateLastName", lastName);
   form.set("SelectedPoliticalParty", "All");
   form.set("SelectedFilingLocation", "All");
-  form.set("ElectionDate", "");
+ 
 
   const response = await fetch(
     `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateSearch/`,
@@ -92,9 +95,16 @@ async function searchCandidateFilings({
     );
   }
   
-    const html = await response.text();
+  const html = await response.text();
 
-  return parseCandidateSearchResults(html, electionId);
+const electionIdMatch = html.match(
+  /id="ElectionId"[^>]*value="(\d+)"/i
+);
+
+const resolvedElectionId =
+  electionId || (electionIdMatch ? Number(electionIdMatch[1]) : null);
+
+return parseCandidateSearchResults(html, resolvedElectionId);  
 }
 
 function extractDetailField(html, label) {
