@@ -10,7 +10,8 @@ const {
 
 
 const {
-  searchCandidateFilings
+  searchCandidateFilings,
+  getCandidateFilingDetail
 } = require("./services/candidateFilingService");
 
 
@@ -45,10 +46,18 @@ app.get("/test-candidate-filing", async (req, res, next) => {
       lastName: req.query.lastName || ""
     });
 
+const detail = results[0]
+  ? await getCandidateFilingDetail({
+      candidateId: results[0].candidateId,
+      electionId: results[0].electionId
+    })
+  : null;
+    
     res.json({
-      count: results.length,
-      results
-    });
+  count: results.length,
+  results,
+  detail
+});
   } catch (error) {
     next(error);
   }
