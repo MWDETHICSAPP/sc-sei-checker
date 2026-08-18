@@ -11,7 +11,8 @@ const {
 
 const {
   searchCandidateFilings,
-  getCandidateFilingDetail
+  getCandidateFilingDetail,
+  getCandidateFilingExport
 } = require("./services/candidateFilingService");
 
 
@@ -62,11 +63,16 @@ const detail = rawDetail && results[0]
       county: rawDetail.county || results[0].county
     }
   : rawDetail;
+    const exportCsv = await getCandidateFilingExport({
+  electionDate: req.query.electionDate || "",
+  lastName: req.query.lastName || ""
+});
     
     res.json({
   count: results.length,
   results,
-  detail
+  detail,
+  exportCsv
 });
   } catch (error) {
     next(error);
