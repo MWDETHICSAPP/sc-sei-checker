@@ -115,7 +115,18 @@ function getPreElectionDueDate(electionDate) {
   return dueDate;
 }
 
+function getPreElectionStartDate(electionDate) {
+  const election = parseElectionDate(electionDate);
 
+  if (!election) {
+    return null;
+  }
+
+  const startDate = new Date(election);
+  startDate.setUTCDate(startDate.getUTCDate() - 20);
+
+  return startDate;
+}
 
 function isObservedFixedHoliday(date, month, day) {
   const targetTime = new Date(
@@ -715,6 +726,7 @@ if (initialDueDate) {
     type: "Campaign Disclosure",
     filing: "Initial Report",
     electionYear,
+    
     dueDate: initialDueDate
       ? initialDueDate.toISOString()
       : null,
@@ -726,11 +738,17 @@ if (electionYear && !hasPreElectionReport) {
   const preElectionDueDate = getPreElectionDueDate(
     input?.electionDate
   );
+  const preElectionStartDate = getPreElectionStartDate(
+  input?.electionDate
+);
 
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
     filing: "Pre-Election Report",
     electionYear,
+    startDate: preElectionStartDate
+  ? preElectionStartDate.toISOString()
+  : null,
     dueDate: preElectionDueDate
       ? preElectionDueDate.toISOString()
       : null,
