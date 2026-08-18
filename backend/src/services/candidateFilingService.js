@@ -18,6 +18,14 @@ function parseCandidateSearchResults(html, electionId) {
     const candidateId = rowMatch[1];
     const rowHtml = rowMatch[2];
 
+    const rowElectionIdMatch = rowHtml.match(/electionId=(\d+)/i);
+
+    const rowElectionId = electionId
+      ? Number(electionId)
+      : rowElectionIdMatch
+        ? Number(rowElectionIdMatch[1])
+        : null;
+
     const cells = [];
     const cellPattern = /<td[^>]*>([\s\S]*?)<\/td>/gi;
 
@@ -38,16 +46,20 @@ function parseCandidateSearchResults(html, electionId) {
       continue;
     }
 
+    const hasElectionNameColumn = cells.length >= 8;
+    const offset = hasElectionNameColumn ? 1 : 0;
+
     results.push({
       candidateId: Number(candidateId),
-      electionId: Number(electionId),
-      office: cells[0] || "",
-      county: cells[1] || "",
-      candidateName: cells[2] || "",
-      runningMate: cells[3] || "",
-      party: cells[4] || "",
-      filingLocation: cells[5] || "",
-      status: cells[6] || ""
+      electionId: rowElectionId,
+      electionName: hasElectionNameColumn ? cells[0] : "",
+      office: cells[offset] || "",
+      county: cells[offset + 1] || "",
+      candidateName: cells[offset + 2] || "",
+      runningMate: cells[offset + 3] || "",
+      party: cells[offset + 4] || "",
+      filingLocation: cells[offset + 5] || "",
+      status: cells[offset + 6] || ""
     });
   }
 
