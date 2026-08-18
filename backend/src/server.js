@@ -46,12 +46,20 @@ app.get("/test-candidate-filing", async (req, res, next) => {
       lastName: req.query.lastName || ""
     });
 
-const detail = results[0]
+const rawDetail = results[0]
   ? await getCandidateFilingDetail({
       candidateId: results[0].candidateId,
       electionId: results[0].electionId
     })
   : null;
+
+const detail = rawDetail && results[0]
+  ? {
+      ...rawDetail,
+      candidateName: rawDetail.candidateName || results[0].candidateName,
+      county: rawDetail.county || results[0].county
+    }
+  : rawDetail;
     
     res.json({
   count: results.length,
