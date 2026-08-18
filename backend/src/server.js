@@ -12,7 +12,7 @@ const {
 const {
   searchCandidateFilings,
   getCandidateFilingDetail,
-  getCandidateFilingExport
+  getCandidateFilingExport,
   parseCandidateFilingExport
 } = require("./services/candidateFilingService");
 
