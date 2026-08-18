@@ -255,8 +255,75 @@ return {
 };
 }
 
+async function getCandidateFilingExport({
+  electionDate,
+  lastName = ""
+}) {
+  if (!electionDate || !lastName) {
+    return "";
+  }
+
+  const value = String(electionDate).trim();
+  let formattedDate = value;
+
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoMatch) {
+    formattedDate = `${isoMatch[2]}/${isoMatch[3]}/${isoMatch[1]}`;
+  }
+
+  const form = new URLSearchParams();
+
+  form.set("ElectionDate", `${formattedDate} 00:00:00`);
+  form.set("SelectedOffice", "-1");
+  form.set("CandidateFirstName", "");
+  form.set("CandidateLastName", lastName);
+  form.set("SelectedPoliticalParty", "All");
+  form.set("SelectedFilingLocation", "All");
+  form.set("SelectedCandidateStatus", "All");
+
+  const searchResponse = await fetch(
+    `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateSearchDate/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "text/html"
+      },
+      body: form.toString()
+    }
+  );
+
+  if (!searchResponse.ok) {
+    throw new Error(
+      `SC Votes candidate export search failed: ${searchResponse.status} ${searchResponse.statusText}`
+    );
+  }
+
+  const cookie = searchResponse.headers.get("set-cookie") || "";
+
+  const exportResponse = await fetch(
+    `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/ExportSearchDateResults`,
+    {
+      headers: {
+        Accept: "text/csv",
+        Cookie: cookie
+      }
+    }
+  );
+
+  if (!exportResponse.ok) {
+    throw new Error(
+      `SC Votes candidate export failed: ${exportResponse.status} ${exportResponse.statusText}`
+    );
+  }
+
+  return exportResponse.text();
+}
+
 module.exports = {
   getElectionsByDate,
   searchCandidateFilings,
-  getCandidateFilingDetail
+  getCandidateFilingDetail,
+  getCandidateFilingExport
 };
