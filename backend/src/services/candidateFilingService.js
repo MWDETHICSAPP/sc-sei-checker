@@ -126,10 +126,20 @@ async function searchCandidateFilings({
     return [];
   }
 
+    
   const form = new URLSearchParams();
 
-  form.set("ElectionId", electionId ? String(electionId) : "");
-form.set("ElectionDate", electionDate || "");
+  if (electionId) {
+  form.set("ElectionId", String(electionId));
+} else {
+  const date = new Date(electionDate);
+
+  const formattedElectionDate = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(
+    date.getDate()
+  ).padStart(2, "0")}/${date.getFullYear()} 00:00:00`;
+
+  form.set("ElectionDate", formattedElectionDate);
+}
 
   form.set("SelectedOffice", "-1");
   form.set("SelectedCandidateStatus", "All");
@@ -139,6 +149,9 @@ form.set("ElectionDate", electionDate || "");
   form.set("SelectedFilingLocation", "All");
  
 
+  const searchPath = electionId
+  ? "/Candidate/CandidateSearch/"
+  : "/Candidate/CandidateSearchDate/";
   const response = await fetch(
     `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateSearch/`,
     {
