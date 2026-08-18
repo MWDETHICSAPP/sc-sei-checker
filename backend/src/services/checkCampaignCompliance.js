@@ -115,17 +115,7 @@ function getPreElectionDueDate(electionDate) {
   return dueDate;
 }
 
-  const [month, day, year] = parts.map(Number);
 
-  if (!month || !day || !year) {
-    return null;
-  }
-
-  const dueDate = new Date(Date.UTC(year, month - 1, day));
-  dueDate.setUTCDate(dueDate.getUTCDate() - 15);
-
-  return dueDate;
-}
 
 function isObservedFixedHoliday(date, month, day) {
   const targetTime = new Date(
