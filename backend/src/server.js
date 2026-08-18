@@ -13,6 +13,7 @@ const {
   searchCandidateFilings,
   getCandidateFilingDetail,
   getCandidateFilingExport
+  parseCandidateFilingExport
 } = require("./services/candidateFilingService");
 
 
@@ -67,13 +68,16 @@ const detail = rawDetail && results[0]
   electionDate: req.query.electionDate || "",
   lastName: req.query.lastName || ""
 });
+   const exportRows = parseCandidateFilingExport(exportCsv);
     
     res.json({
   count: results.length,
   results,
   detail,
   exportCsv
+  exportRows
 });
+    
   } catch (error) {
     next(error);
   }
