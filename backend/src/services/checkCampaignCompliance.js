@@ -14,8 +14,12 @@ const { findMatchingCampaignRuns } = require("./campaignRunMatcher");
 
 const {
   searchCandidateFilings,
-  getCandidateFilingDetail
+  getCandidateFilingDetail,
+  getCandidateFilingExport,
+  parseCandidateFilingExport,
+  findMatchingCandidateExportRow
 } = require("./candidateFilingService");
+
 const {
   searchCandidates,
   getCandidateHistory
@@ -578,6 +582,48 @@ console.log(
   "RELEVANT OFFICE RUNS:",
   JSON.stringify(relevantOfficeRuns, null, 2)
 );
+ let candidateFilingMatch = null;
+let candidateFilingExportRow = null;
+
+if (input?.electionDate && candidate) {
+  try {
+    const candidateFilingResults = await searchCandidateFilings({
+      electionDate: input.electionDate,
+      lastName: candidate
+    });
+
+    candidateFilingMatch =
+      candidateFilingResults.find((result) => {
+        if (!requestedOffice) return true;
+
+        return (
+          String(result?.office || "")
+            .trim()
+            .toLowerCase() === requestedOffice
+        );
+      }) || null;
+
+    if (candidateFilingMatch) {
+      const exportCsv = await getCandidateFilingExport({
+        electionDate: input.electionDate,
+        lastName: candidate
+      });
+
+      const exportRows = parseCandidateFilingExport(exportCsv);
+
+      candidateFilingExportRow =
+        findMatchingCandidateExportRow(
+          exportRows,
+          candidateFilingMatch
+        );
+    }
+  } catch (error) {
+    console.error(
+      "SC Votes candidate filing lookup failed:",
+      error.message
+    );
+  }
+} 
 const relevantFilerIds = new Set(
   relevantOfficeRuns
     .map((office) => office?.filerId)
@@ -779,6 +825,8 @@ for (const report of evaluatedQuarterlyReports) {
     reviewType: "Campaign Disclosure",
    reports: reportList,
     campaignProfile,
+      candidateFilingMatch,
+  candidateFilingExportRow,
     relevantOfficeRuns,
 relevantReports,
     electionRelatedReports,
