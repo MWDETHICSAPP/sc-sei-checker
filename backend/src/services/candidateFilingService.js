@@ -8,6 +8,52 @@ function normalizeText(value) {
     .replace(/\s+/g, " ");
 }
 
+function parseCandidateSearchResults(html, electionId) {
+  const results = [];
+  const rowPattern = /<tr[^>]*data-key="(\d+)"[^>]*>([\s\S]*?)<\/tr>/gi;
+
+  let rowMatch;
+
+  while ((rowMatch = rowPattern.exec(html)) !== null) {
+    const candidateId = rowMatch[1];
+    const rowHtml = rowMatch[2];
+
+    const cells = [];
+    const cellPattern = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+
+    let cellMatch;
+
+    while ((cellMatch = cellPattern.exec(rowHtml)) !== null) {
+      const text = cellMatch[1]
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&nbsp;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      cells.push(text);
+    }
+
+    if (!candidateId || cells.length < 3) {
+      continue;
+    }
+
+    results.push({
+      candidateId: Number(candidateId),
+      electionId: Number(electionId),
+      office: cells[0] || "",
+      county: cells[1] || "",
+      candidateName: cells[2] || "",
+      runningMate: cells[3] || "",
+      party: cells[4] || "",
+      filingLocation: cells[5] || "",
+      status: cells[6] || ""
+    });
+  }
+
+  return results;
+}
+
 async function searchCandidateFilings({
   electionId,
   firstName = "",
@@ -45,9 +91,10 @@ async function searchCandidateFilings({
       `SC Votes candidate filing search failed: ${response.status} ${response.statusText}`
     );
   }
+  
     const html = await response.text();
 
-  return html;
+  return parseCandidateSearchResults(html, electionId);
 }
 
 module.exports = {
