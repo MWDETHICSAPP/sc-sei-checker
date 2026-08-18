@@ -13,7 +13,8 @@ const {
   searchCandidateFilings,
   getCandidateFilingDetail,
   getCandidateFilingExport,
-  parseCandidateFilingExport
+  parseCandidateFilingExport,
+  findMatchingCandidateExportRow
 } = require("./services/candidateFilingService");
 
 
@@ -69,13 +70,17 @@ const detail = rawDetail && results[0]
   lastName: req.query.lastName || ""
 });
    const exportRows = parseCandidateFilingExport(exportCsv);
+    const matchedExportRow = results[0]
+  ? findMatchingCandidateExportRow(exportRows, results[0])
+  : null;
     
     res.json({
   count: results.length,
   results,
   detail,
   exportCsv,
-  exportRows
+  exportRows,
+  matchedExportRow
 });
     
   } catch (error) {
