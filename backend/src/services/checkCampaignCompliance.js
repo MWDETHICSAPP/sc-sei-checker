@@ -11,6 +11,11 @@
  * It is not connected to the live application yet.
  */
 const { findMatchingCampaignRuns } = require("./campaignRunMatcher");
+
+const {
+  searchCandidateFilings,
+  getCandidateFilingDetail
+} = require("./candidateFilingService");
 const {
   searchCandidates,
   getCandidateHistory
