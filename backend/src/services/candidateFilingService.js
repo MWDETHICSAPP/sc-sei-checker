@@ -97,6 +97,33 @@ async function searchCandidateFilings({
   return parseCandidateSearchResults(html, electionId);
 }
 
+async function getCandidateFilingDetail({
+  candidateId,
+  electionId
+}) {
+  if (!candidateId || !electionId) {
+    return null;
+  }
+
+  const response = await fetch(
+    `${SC_VOTES_CANDIDATE_BASE_URL}/Candidate/CandidateDetail/?candidateId=${candidateId}&electionId=${electionId}&searchType=Default`,
+    {
+      headers: {
+        Accept: "text/html"
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `SC Votes candidate detail request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  return response.text();
+}
+
 module.exports = {
-  searchCandidateFilings
+  searchCandidateFilings,
+  getCandidateFilingDetail
 };
