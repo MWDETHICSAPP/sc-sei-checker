@@ -74,7 +74,7 @@ const detail = rawDetail && results[0]
   count: results.length,
   results,
   detail,
-  exportCsv
+  exportCsv,
   exportRows
 });
     
