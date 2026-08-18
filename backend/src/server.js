@@ -9,6 +9,12 @@ const {
 } = require("./services/electionHistoryService");
 
 
+const {
+  searchCandidateFilings
+} = require("./services/candidateFilingService");
+
+
+
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
@@ -31,7 +37,22 @@ app.get("/", (_req, res) => res.json({name:"SC SEI Checker API",version:"0.2.0",
 app.get("/health", (_req, res) => res.status(200).json({
   ok:true, service:"sc-sei-checker-backend", version:"0.2.0", timestamp:new Date().toISOString()
 }));
+app.get("/test-candidate-filing", async (req, res, next) => {
+  try {
+    const results = await searchCandidateFilings({
+      electionId: req.query.electionId,
+      firstName: req.query.firstName || "",
+      lastName: req.query.lastName || ""
+    });
 
+    res.json({
+      count: results.length,
+      results
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 app.get("/test-election-history", async (_req, res, next) => {
   try {
     const matches = await searchCandidates("Henry McMaster");
