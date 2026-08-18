@@ -38,10 +38,12 @@ app.get("/", (_req, res) => res.json({name:"SC SEI Checker API",version:"0.2.0",
 app.get("/health", (_req, res) => res.status(200).json({
   ok:true, service:"sc-sei-checker-backend", version:"0.2.0", timestamp:new Date().toISOString()
 }));
+
 app.get("/test-candidate-filing", async (req, res, next) => {
   try {
     const results = await searchCandidateFilings({
       electionId: req.query.electionId,
+      electionDate: req.query.electionDate || "",
       firstName: req.query.firstName || "",
       lastName: req.query.lastName || ""
     });
