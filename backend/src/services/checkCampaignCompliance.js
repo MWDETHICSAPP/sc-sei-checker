@@ -756,6 +756,20 @@ timely:
     lastUpdated < electionDate
   );
 });
+
+const candidateFilingFee = Number(
+  String(candidateFilingExportRow?.["Filing Fee"] || "")
+    .replace(/[$,]/g, "")
+);
+
+const filingFeeFinancialActivity =
+  Number.isFinite(candidateFilingFee)
+    ? candidateFilingFee * 2
+    : 0;
+
+const filingFeeMeetsInitialThreshold =
+  filingFeeFinancialActivity >= 500;
+  
  const campaignDeficiencies = [];
 
 if (
@@ -765,13 +779,39 @@ if (
 ) {
 const electionForInitial = parseElectionDate(input?.electionDate);
 
-const initialDueDate = electionForInitial
+const electionBasedInitialDueDate = electionForInitial
   ? new Date(electionForInitial)
   : null;
 
-if (initialDueDate) {
-  initialDueDate.setUTCDate(initialDueDate.getUTCDate() - 15);
+if (electionBasedInitialDueDate) {
+  electionBasedInitialDueDate.setUTCDate(
+    electionBasedInitialDueDate.getUTCDate() - 15
+  );
 }
+
+const filingFeeDate = parseElectionDate(
+  candidateFilingExportRow?.["Date Filed"]
+);
+
+const financialTriggerInitialDueDate =
+  filingFeeMeetsInitialThreshold && filingFeeDate
+    ? new Date(filingFeeDate)
+    : null;
+
+if (financialTriggerInitialDueDate) {
+  financialTriggerInitialDueDate.setUTCDate(
+    financialTriggerInitialDueDate.getUTCDate() + 10
+  );
+}
+
+const initialDueDate =
+  financialTriggerInitialDueDate &&
+  electionBasedInitialDueDate
+    ? financialTriggerInitialDueDate < electionBasedInitialDueDate
+      ? financialTriggerInitialDueDate
+      : electionBasedInitialDueDate
+    : financialTriggerInitialDueDate ||
+      electionBasedInitialDueDate;
 
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
