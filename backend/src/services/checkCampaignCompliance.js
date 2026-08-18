@@ -611,7 +611,7 @@ console.log(
   JSON.stringify(electionRelatedReports, null, 2)
 );
 
-const hasInitialReport = electionRelatedReports.some((report) =>
+const hasInitialReport = relevantReports.some((report) =>
   String(report?.reportName || "")
     .toLowerCase()
     .includes("initial")
