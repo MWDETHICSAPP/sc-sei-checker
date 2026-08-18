@@ -372,10 +372,40 @@ function parseCandidateFilingExport(csvText) {
   });
 }
 
+function findMatchingCandidateExportRow(rows, candidate) {
+  if (!Array.isArray(rows) || !candidate) {
+    return null;
+  }
+
+  const candidateName = normalizeText(candidate.candidateName);
+  const candidateOffice = normalizeText(candidate.office);
+  const candidateCounty = normalizeText(candidate.county);
+
+  return (
+    rows.find((row) => {
+      const rowName = normalizeText(
+        `${row["Ballot Name (first - middle)"] || ""} ${
+          row["Ballot Name (last - suffix)"] || ""
+        }`
+      );
+
+      const rowOffice = normalizeText(row["Office"]);
+      const rowCounty = normalizeText(row["Associated Counties"]);
+
+      return (
+        rowName === candidateName &&
+        rowOffice === candidateOffice &&
+        rowCounty === candidateCounty
+      );
+    }) || null
+  );
+}
+
 module.exports = {
   getElectionsByDate,
   searchCandidateFilings,
   getCandidateFilingDetail,
   getCandidateFilingExport,
   parseCandidateFilingExport
+  findMatchingCandidateExportRow
 };
