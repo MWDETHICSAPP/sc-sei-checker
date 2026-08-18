@@ -72,15 +72,48 @@ function getQuarterlyDueDate(reportName) {
   return dueDates[quarter] || null;
 }
 
-function getPreElectionDueDate(electionDate) {
+function parseElectionDate(electionDate) {
   if (!electionDate) return null;
 
-  const electionDateText = String(electionDate).trim();
-  const parts = electionDateText.split('/');
+  const value = String(electionDate).trim();
 
-  if (parts.length !== 3) {
+  // ISO format: YYYY-MM-DD
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+
+    return new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day))
+    );
+  }
+
+  // Spreadsheet/display format: MM/DD/YYYY
+  const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (slashMatch) {
+    const [, month, day, year] = slashMatch;
+
+    return new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day))
+    );
+  }
+
+  return null;
+}
+
+function getPreElectionDueDate(electionDate) {
+  const election = parseElectionDate(electionDate);
+
+  if (!election) {
     return null;
   }
+
+  const dueDate = new Date(election);
+  dueDate.setUTCDate(dueDate.getUTCDate() - 15);
+
+  return dueDate;
+}
 
   const [month, day, year] = parts.map(Number);
 
@@ -678,18 +711,14 @@ if (
   !hasInitialReport &&
   !hasPriorCampaignReporting
 ) {
-  let initialDueDate = null;
+const electionForInitial = parseElectionDate(input?.electionDate);
 
-if (input?.electionDate) {
-  const electionDateText = String(input.electionDate).trim();
-  const parts = electionDateText.split('/');
+const initialDueDate = electionForInitial
+  ? new Date(electionForInitial)
+  : null;
 
-  if (parts.length === 3) {
-    const [month, day, year] = parts.map(Number);
-
-    initialDueDate = new Date(Date.UTC(year, month - 1, day));
-    initialDueDate.setUTCDate(initialDueDate.getUTCDate() - 15);
-  }
+if (initialDueDate) {
+  initialDueDate.setUTCDate(initialDueDate.getUTCDate() - 15);
 }
 
   campaignDeficiencies.push({
