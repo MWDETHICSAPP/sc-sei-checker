@@ -158,6 +158,18 @@ async function searchPublicSei({
 }) {
   
   const positions = await getPositions();
+  console.log(
+  "SOLICITOR POSITIONS:",
+  JSON.stringify(
+    positions.filter((position) =>
+      String(position?.name || "")
+        .toLowerCase()
+        .includes("solicitor")
+    ),
+    null,
+    2
+  )
+);
   const isSolicitor =
   normalizeText(office) === "solicitor";
   const solicitorPositionInfo =
