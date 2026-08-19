@@ -690,9 +690,11 @@ const formattedPenalty = initialPenalty.toLocaleString('en-US', {
     ]);
 
   const cityStateZip =
-    firstValue(row, ['City State Zip', 'City, State, Zip']) ||
-    [city, state, zip].filter(Boolean).join(', ').replace(', ,', ',') ||
-    '[CITY, STATE ZIP]';
+  firstValue(row, ['City State Zip', 'City, State, Zip']) ||
+  [city, state, zip].filter(Boolean).join(', ').replace(', ,', ',') ||
+  (normalizeWhitespace(row.__candidateAddress || '')
+    ? ''
+    : '[CITY, STATE ZIP]');
 
   const jurisdiction =
     firstValue(row, [
