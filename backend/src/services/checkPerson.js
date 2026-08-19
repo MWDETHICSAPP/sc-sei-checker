@@ -164,6 +164,10 @@ async function searchPublicSei({
   isSolicitor
     ? findPositionInfo(positions, "Solicitor")
     : null;
+  console.log(
+  "SOLICITOR POSITION INFO:",
+  JSON.stringify(solicitorPositionInfo, null, 2)
+);
   
   const jurisdictions = String(jurisdiction || "")
   .split(";")
