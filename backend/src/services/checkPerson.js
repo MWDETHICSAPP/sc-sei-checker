@@ -159,6 +159,23 @@ async function searchPublicSei({
   
   const positions = await getPositions();
   console.log(
+  "STUMBO POSITION CANDIDATES:",
+  JSON.stringify(
+    positions.filter((position) => {
+      const name = String(position?.name || "").toLowerCase();
+
+      return (
+        name.includes("abbeville") ||
+        name.includes("greenwood") ||
+        name.includes("laurens") ||
+        name.includes("newberry")
+      );
+    }),
+    null,
+    2
+  )
+);
+  console.log(
   "SOLICITOR POSITIONS:",
   JSON.stringify(
     positions.filter((position) =>
