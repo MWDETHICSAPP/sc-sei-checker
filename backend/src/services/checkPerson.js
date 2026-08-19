@@ -381,12 +381,13 @@ const requiresSei =
       input: normalized,
       campaignCompliance,
       deficiencies: [
-  {
-    type: "SEI",
-    filing: `${year} Statement of Economic Interests`,
-    status: "Missing",
-    year
-  },
+ {
+  type: "SEI",
+  filing: `${year} Statement of Economic Interests`,
+  status: "Missing",
+  year,
+  dueDate: `${year}-03-30T00:00:00.000Z`
+},
   ...campaignDeficiencies
 ],
       search: {
