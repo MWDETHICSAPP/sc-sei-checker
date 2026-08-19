@@ -551,6 +551,27 @@ const scVotesMatchedRuns = [
   )
 ];
 
+console.log(
+  "LOTT MATCH INPUTS:",
+  JSON.stringify(
+    {
+      candidate,
+      requestedOffice,
+      electionDate: input?.electionDate,
+      allOfficeRuns: allOfficeRuns.map((office) => ({
+        name: office?.name,
+        start: office?.start,
+        end: office?.end,
+        filerId: office?.filerId,
+        campaignId: office?.campaignId,
+        isClosed: office?.isClosed
+      }))
+    },
+    null,
+    2
+  )
+);
+  
 const relevantOfficeRuns =
   input?.electionDate && requestedOffice
     ? findMatchingCampaignRuns(
