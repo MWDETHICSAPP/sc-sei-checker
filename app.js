@@ -134,26 +134,35 @@ $('prepareBtn').addEventListener('click', async () => {
   const nameKey = $('nameColumn').value;
   const jurisdictionKey = $('jurisdictionColumn').value;
   const roleKey = $('roleColumn').value;
+
   const electionDateKey = Object.keys(sourceRows[0] || {}).find(
-  key => normalizeWhitespace(key).toLowerCase() === 'election date'
-);
+    key => normalizeWhitespace(key).toLowerCase() === 'election date'
+  );
+
+  const officeKey = Object.keys(sourceRows[0] || {}).find(
+    key => normalizeWhitespace(key).toLowerCase() === 'office'
+  );
+
   const year = Number($('yearInput').value) || 2026;
 
-  preparedRows = sourceRows.map((row, index) => ({
-    ...row,
-    __index: index,
-    __name: normalizeWhitespace(row[nameKey]),
-    __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
-    __role: normalizeWhitespace(row[roleKey]),
-    __electionDate: electionDateKey
-  ? normalizeElectionDate(row[electionDateKey])
-  : "",
-    __surname: getSurname(row[nameKey]),
-        __year: year,
-    __status: 'Pending',
-    __matchedName: '',
-    __notes: 'Waiting for backend response.'
-  }));
+preparedRows = sourceRows.map((row, index) => ({
+  ...row,
+  __index: index,
+  __name: normalizeWhitespace(row[nameKey]),
+  __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
+  __role: normalizeWhitespace(row[roleKey]),
+  __office: officeKey
+    ? normalizeWhitespace(row[officeKey])
+    : '',
+  __electionDate: electionDateKey
+    ? normalizeElectionDate(row[electionDateKey])
+    : "",
+  __surname: getSurname(row[nameKey]),
+  __year: year,
+  __status: 'Pending',
+  __matchedName: '',
+  __notes: 'Waiting for backend response.'
+}));
 
   renderRows(preparedRows);
   resultsCard.hidden = false;
@@ -213,6 +222,7 @@ const people = validRows.map((row) => ({
   name: row.__name,
   jurisdiction: row.__jurisdiction,
   role: row.__role,
+  office: row.__office,
   year,
   electionDate: row.__electionDate || null
 }));
