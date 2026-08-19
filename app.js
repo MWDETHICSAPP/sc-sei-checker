@@ -586,8 +586,19 @@ const startDate = deficiency?.startDate
     })
   : '';
   let text = filing + (year ? ` (${year})` : '');
-    if (filing.includes('Quarter') && dueDate) {
-  text = `The ${filing}, which was due on ${dueDate}, has not been filed.`;
+   if (filing.includes('Quarter') && dueDate) {
+  const filedDate = deficiency?.filedDate
+    ? new Date(deficiency.filedDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC'
+      })
+    : '';
+
+  text = filedDate
+    ? `The ${filing}, which was due on ${dueDate}, was filed late on ${filedDate}.`
+    : `The ${filing}, which was due on ${dueDate}, has not been filed.`;
 }
 
   if (filing.includes('Initial') && dueDate) {
