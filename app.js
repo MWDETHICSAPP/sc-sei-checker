@@ -272,6 +272,12 @@ const people = validRows.map((row) => ({
   ? result.deficiencies
   : [];
 
+const candidateContactAddress =
+  result.campaignCompliance?.candidateFilingExportRow?.["Contact Address"] || '';
+
+row.__candidateAddress =
+  normalizeWhitespace(candidateContactAddress);
+
 if (row.__deficiencies.length > 0) {
   row.__notes =
     'Deficiencies: ' +
