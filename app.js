@@ -560,16 +560,23 @@ const letterDeficiencies = rawDeficiencies.map((deficiency) => {
         timeZone: 'UTC'
       })
     : '';
-
+const startDate = deficiency?.startDate
+  ? new Date(deficiency.startDate).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC'
+    })
+  : '';
   let text = filing + (year ? ` (${year})` : '');
 
   if (filing === 'Initial Report' && dueDate) {
     text = `A ${year} Initial Campaign Disclosure, which was due no later than ${dueDate}, has not been filed.`;
   }
 
-  if (filing === 'Pre-Election Report' && dueDate) {
-    text = `A ${year} Pre-Election Campaign Disclosure, which was due on ${dueDate}, has not been filed.`;
-  }
+ if (filing === "Pre-Election Report" && startDate && dueDate) {
+  text = `A ${year} Pre-Election Campaign Disclosure, which was required to be filed between ${startDate} and ${dueDate}, has not been filed.`;
+}
 
   return {
     ...deficiency,
