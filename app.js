@@ -689,12 +689,15 @@ const formattedPenalty = initialPenalty.toLocaleString('en-US', {
       'Postal Code'
     ]);
 
-  const cityStateZip =
-  firstValue(row, ['City State Zip', 'City, State, Zip']) ||
-  [city, state, zip].filter(Boolean).join(', ').replace(', ,', ',') ||
-  (normalizeWhitespace(row.__candidateAddress || '')
+  const candidateAddress =
+  normalizeWhitespace(row.__candidateAddress || '');
+
+const cityStateZip =
+  candidateAddress
     ? ''
-    : '[CITY, STATE ZIP]');
+    : firstValue(row, ['City State Zip', 'City, State, Zip']) ||
+      [city, state, zip].filter(Boolean).join(', ').replace(', ,', ',') ||
+      '[CITY, STATE ZIP]';
 
   const jurisdiction =
     firstValue(row, [
@@ -835,6 +838,8 @@ const deficiencyBox = (text) =>
         font: 'Times New Roman',
         size: 24
       }),
+      ...(cityStateZip
+  ? [
       new TextRun({
         text: cityStateZip,
         break: 1,
@@ -842,7 +847,7 @@ const deficiencyBox = (text) =>
         size: 24
       })
     ]
-  });
+  : [])
 
  const campaignOffice =
   normalizeWhitespace(row.__campaignOffice || '');
