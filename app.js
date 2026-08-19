@@ -558,7 +558,7 @@ if (type === 'SEI') {
       : filing || `${filingYear} Statement of Economic Interests`
   };
 }
-  }
+  
 
   if (type === 'Campaign Disclosure') {
   const year = deficiency?.electionYear || '';
