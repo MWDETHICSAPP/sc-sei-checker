@@ -157,10 +157,16 @@ async function searchPublicSei({
 }) {
   const positions = await getPositions();
 
-  const positionInfo = findPositionInfo(
-    positions,
-    jurisdiction
-  );
+  const jurisdictions = String(jurisdiction || "")
+  .split(";")
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const positionInfos = jurisdictions
+  .map((value) => findPositionInfo(positions, value))
+  .filter(Boolean);
+
+const positionInfo = positionInfos[0] || null;
 
   if (!positionInfo) {
     return {
@@ -168,6 +174,17 @@ async function searchPublicSei({
       positionInfo: null,
       positionLookupFailed: true
     };
+  }
+
+const allMatches = [];
+
+for (let i = 0; i < jurisdictions.length; i += 1) {
+  const jurisdictionName = jurisdictions[i];
+  const jurisdictionPositionInfo =
+    findPositionInfo(positions, jurisdictionName);
+
+  if (!jurisdictionPositionInfo) {
+    continue;
   }
 
   const response = await fetch(REPORTS_URL, {
@@ -183,18 +200,18 @@ async function searchPublicSei({
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
     },
     body: JSON.stringify({
-  filerName: surname.toLowerCase(),
-  positionSearch: jurisdiction,
-  positionInfo: {
-    id: positionInfo.id,
-    name: positionInfo.name,
-    nameType: positionInfo.nameType,
-    type: positionInfo.type,
-    typeId: positionInfo.typeId
-  },
-  reportYear: Number(year)
-}),
-});
+      filerName: surname.toLowerCase(),
+      positionSearch: jurisdictionName,
+      positionInfo: {
+        id: jurisdictionPositionInfo.id,
+        name: jurisdictionPositionInfo.name,
+        nameType: jurisdictionPositionInfo.nameType,
+        type: jurisdictionPositionInfo.type,
+        typeId: jurisdictionPositionInfo.typeId
+      },
+      reportYear: Number(year)
+    })
+  });
 
   if (!response.ok) {
     const body = await response.text();
@@ -212,13 +229,33 @@ async function searchPublicSei({
 
   const payload = await response.json();
 
-  return {
-    matches: Array.isArray(payload.result)
-      ? payload.result
-      : [],
-    positionInfo,
-    positionLookupFailed: false
-  };
+  if (Array.isArray(payload.result)) {
+    allMatches.push(...payload.result);
+  }
+}
+
+const uniqueMatches = [
+  ...new Map(
+    allMatches.map((match) => {
+      const key =
+        match?.reportId ||
+        match?.id ||
+        [
+  match?.filerName,
+  match?.report,
+  match?.updated
+].join("|");
+
+      return [key, match];
+    })
+  ).values()
+];
+
+return {
+  matches: uniqueMatches,
+  positionInfo,
+  positionLookupFailed: false
+}; 
 }
 
 async function checkPerson(input) {
