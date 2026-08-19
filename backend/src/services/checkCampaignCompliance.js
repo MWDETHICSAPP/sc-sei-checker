@@ -785,50 +785,28 @@ const filingFeeMeetsInitialThreshold =
 
 if (
   electionYear &&
+  filingFeeMeetsInitialThreshold &&
   !hasInitialReport &&
   !hasPriorCampaignReporting
 ) {
-const electionForInitial = parseElectionDate(input?.electionDate);
-
-const electionBasedInitialDueDate = electionForInitial
-  ? new Date(electionForInitial)
-  : null;
-
-if (electionBasedInitialDueDate) {
-  electionBasedInitialDueDate.setUTCDate(
-    electionBasedInitialDueDate.getUTCDate() - 15
+  const filingFeeDate = parseElectionDate(
+    candidateFilingExportRow?.["Date Filed"]
   );
-}
 
-const filingFeeDate = parseElectionDate(
-  candidateFilingExportRow?.["Date Filed"]
-);
-
-const financialTriggerInitialDueDate =
-  filingFeeMeetsInitialThreshold && filingFeeDate
+  const initialDueDate = filingFeeDate
     ? new Date(filingFeeDate)
     : null;
 
-if (financialTriggerInitialDueDate) {
-  financialTriggerInitialDueDate.setUTCDate(
-    financialTriggerInitialDueDate.getUTCDate() + 10
-  );
-}
-
-const initialDueDate =
-  financialTriggerInitialDueDate &&
-  electionBasedInitialDueDate
-    ? financialTriggerInitialDueDate < electionBasedInitialDueDate
-      ? financialTriggerInitialDueDate
-      : electionBasedInitialDueDate
-    : financialTriggerInitialDueDate ||
-      electionBasedInitialDueDate;
+  if (initialDueDate) {
+    initialDueDate.setUTCDate(
+      initialDueDate.getUTCDate() + 10
+    );
+  }
 
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
     filing: "Initial Report",
     electionYear,
-    
     dueDate: initialDueDate
       ? initialDueDate.toISOString()
       : null,
