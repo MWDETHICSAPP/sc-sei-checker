@@ -13,6 +13,9 @@ const POSITIONS_URL =
 const REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Search/For/Sei/Reports";
 
+const SEI_POSITION_TYPES_URL =
+  "https://ethicsfiling.sc.gov/api/Sei/Filer/Position/Get/Entity/Positions/For/Sei/Position";
+
 let positionsCache = null;
 let positionsCacheTime = 0;
 
@@ -82,6 +85,40 @@ async function getPositions() {
   return positionsCache;
 }
 
+async function getSeiPositionTypes() {
+  const response = await fetch(SEI_POSITION_TYPES_URL, {
+    headers: {
+      Accept: "application/json",
+      Referer:
+        "https://ethicsfiling.sc.gov/public/statement-economic-interests",
+      Origin: "https://ethicsfiling.sc.gov",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
+    }
+  });
+
+  if (!response.ok) {
+    const error = new Error(
+      `The SEI position lookup returned status ${response.status}.`
+    );
+
+    error.status = 502;
+    throw error;
+  }
+
+  const payload = await response.json();
+
+  if (!Array.isArray(payload)) {
+    const error = new Error(
+      "The SEI position lookup returned an unexpected response."
+    );
+
+    error.status = 502;
+    throw error;
+  }
+
+  return payload;
+}
 
 
 
@@ -158,56 +195,25 @@ async function searchPublicSei({
 }) {
   
   const positions = await getPositions();
-  console.log(
-  "STUMBO POSITION CANDIDATES:",
-  JSON.stringify(
-    positions.filter((position) => {
-      const name = String(position?.name || "").toLowerCase();
-
-      return (
-        name.includes("abbeville") ||
-        name.includes("greenwood") ||
-        name.includes("laurens") ||
-        name.includes("newberry")
-      );
-    }),
-    null,
-    2
-  )
-);
-  console.log(
-  "SOLICITOR POSITIONS:",
-  JSON.stringify(
-    positions.filter((position) =>
-      String(position?.name || "")
-        .toLowerCase()
-        .includes("solicitor")
-    ),
-    null,
-    2
-  )
-);
+ 
+  
   const isSolicitor =
   normalizeText(office) === "solicitor";
-  const solicitorPositionInfo =
-  isSolicitor
-    ? findPositionInfo(positions, "Solicitor")
-    : null;
-  console.log(
-  "SOLICITOR POSITION INFO:",
-  JSON.stringify(solicitorPositionInfo, null, 2)
-);
+
   
   const jurisdictions = String(jurisdiction || "")
   .split(";")
   .map((value) => value.trim())
   .filter(Boolean);
 
-const positionInfos = isSolicitor && solicitorPositionInfo
-  ? [solicitorPositionInfo]
-  : jurisdictions
-      .map((value) => findPositionInfo(positions, value))
-      .filter(Boolean);
+const positionInfos = jurisdictions
+  .map((value) =>
+    findPositionInfo(
+      positions,
+      isSolicitor ? `${value} County` : value
+    )
+  )
+  .filter(Boolean);
 
 const positionInfo = positionInfos[0] || null;
 
@@ -221,18 +227,15 @@ const positionInfo = positionInfos[0] || null;
 
 const allMatches = [];
 
-const searchTargets =
-  isSolicitor && solicitorPositionInfo
-    ? ["Solicitor"]
-    : jurisdictions;
+const searchTargets = isSolicitor
+  ? jurisdictions.map((value) => `${value} County`)
+  : jurisdictions;
 
 for (let i = 0; i < searchTargets.length; i += 1) {
   const jurisdictionName = searchTargets[i];
 
   const jurisdictionPositionInfo =
-    isSolicitor && solicitorPositionInfo
-      ? solicitorPositionInfo
-      : findPositionInfo(positions, jurisdictionName);
+    findPositionInfo(positions, jurisdictionName);
 
   if (!jurisdictionPositionInfo) {
     continue;
