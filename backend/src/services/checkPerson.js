@@ -501,7 +501,10 @@ if (matches.length === 0 && !requiresSei) {
         surname,
         adapter: "sc-ethics-public-api"
       },
-      status: "Filed",
+      status:
+  campaignDeficiencies.length > 0
+    ? "Not Filed"
+    : "Filed",
       confidence: Number(
         match.percentageAccuracy || 1
       ),
