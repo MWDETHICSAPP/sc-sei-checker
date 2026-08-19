@@ -621,14 +621,18 @@ const deficiencyBoxText =
     ? letterDeficiencies.map((deficiency) => deficiency.text).join('\n')
     : `${filingYear} Statement of Economic Interests`;
 
-  const hasSeiDeficiency =
+ const hasSeiDeficiency =
   letterDeficiencies.some(
-    (deficiency) => deficiency.category === 'SEI'
+    (deficiency) =>
+      deficiency.category === 'SEI' ||
+      deficiency.type === 'SEI'
   );
 
 const hasCampaignDeficiency =
   letterDeficiencies.some(
-    (deficiency) => deficiency.category === 'Campaign Disclosure'
+    (deficiency) =>
+      deficiency.category === 'Campaign Disclosure' ||
+      deficiency.type === 'Campaign Disclosure'
   );
 
 let deficiencyParagraphText = '';
