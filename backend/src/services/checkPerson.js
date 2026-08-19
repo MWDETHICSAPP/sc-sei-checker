@@ -153,18 +153,28 @@ function findPositionInfo(positions, jurisdiction) {
 async function searchPublicSei({
   surname,
   jurisdiction,
+  office,
   year
 }) {
+  
   const positions = await getPositions();
-
+  const isSolicitor =
+  normalizeText(office) === "solicitor";
+  const solicitorPositionInfo =
+  isSolicitor
+    ? findPositionInfo(positions, "Solicitor")
+    : null;
+  
   const jurisdictions = String(jurisdiction || "")
   .split(";")
   .map((value) => value.trim())
   .filter(Boolean);
 
-const positionInfos = jurisdictions
-  .map((value) => findPositionInfo(positions, value))
-  .filter(Boolean);
+const positionInfos = isSolicitor && solicitorPositionInfo
+  ? [solicitorPositionInfo]
+  : jurisdictions
+      .map((value) => findPositionInfo(positions, value))
+      .filter(Boolean);
 
 const positionInfo = positionInfos[0] || null;
 
@@ -178,10 +188,18 @@ const positionInfo = positionInfos[0] || null;
 
 const allMatches = [];
 
-for (let i = 0; i < jurisdictions.length; i += 1) {
-  const jurisdictionName = jurisdictions[i];
+const searchTargets =
+  isSolicitor && solicitorPositionInfo
+    ? ["Solicitor"]
+    : jurisdictions;
+
+for (let i = 0; i < searchTargets.length; i += 1) {
+  const jurisdictionName = searchTargets[i];
+
   const jurisdictionPositionInfo =
-    findPositionInfo(positions, jurisdictionName);
+    isSolicitor && solicitorPositionInfo
+      ? solicitorPositionInfo
+      : findPositionInfo(positions, jurisdictionName);
 
   if (!jurisdictionPositionInfo) {
     continue;
@@ -367,6 +385,7 @@ const seiJurisdiction =
 const searchResult = await searchPublicSei({
   surname,
   jurisdiction: seiJurisdiction,
+  office: normalized.office,
   year
 });
 
