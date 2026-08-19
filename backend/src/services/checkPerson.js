@@ -13,8 +13,6 @@ const POSITIONS_URL =
 const REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Search/For/Sei/Reports";
 
-const SEI_POSITION_TYPES_URL =
-  "https://ethicsfiling.sc.gov/api/Sei/Filer/Position/Get/Entity/Positions/For/Sei/Position";
 
 let positionsCache = null;
 let positionsCacheTime = 0;
@@ -85,40 +83,7 @@ async function getPositions() {
   return positionsCache;
 }
 
-async function getSeiPositionTypes() {
-  const response = await fetch(SEI_POSITION_TYPES_URL, {
-    headers: {
-      Accept: "application/json",
-      Referer:
-        "https://ethicsfiling.sc.gov/public/statement-economic-interests",
-      Origin: "https://ethicsfiling.sc.gov",
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
-    }
-  });
 
-  if (!response.ok) {
-    const error = new Error(
-      `The SEI position lookup returned status ${response.status}.`
-    );
-
-    error.status = 502;
-    throw error;
-  }
-
-  const payload = await response.json();
-
-  if (!Array.isArray(payload)) {
-    const error = new Error(
-      "The SEI position lookup returned an unexpected response."
-    );
-
-    error.status = 502;
-    throw error;
-  }
-
-  return payload;
-}
 
 
 
@@ -283,18 +248,10 @@ for (let i = 0; i < searchTargets.length; i += 1) {
 
  const payload = await response.json();
 
-console.log(
-  "SEI MULTI-JURISDICTION SEARCH:",
-  jurisdictionName,
-  jurisdictionPositionInfo.name,
-  Array.isArray(payload.result) ? payload.result.length : 0
-);
+
 
 if (Array.isArray(payload.result)) {
-  console.log(
-    "SEI MATCHES:",
-    JSON.stringify(payload.result, null, 2)
-  );
+
 
   allMatches.push(...payload.result);
 }
@@ -317,10 +274,7 @@ const uniqueMatches = [
   ).values()
 ];
 
-  console.log(
-  "SEI UNIQUE MATCHES:",
-  JSON.stringify(uniqueMatches, null, 2)
-);
+  
 return {
   matches: uniqueMatches,
   positionInfo,
