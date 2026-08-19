@@ -665,12 +665,14 @@ const formattedPenalty = initialPenalty.toLocaleString('en-US', {
     fullName.split(/\s+/).slice(-1)[0] ||
     '[LAST NAME]';
 
-  const address =
-    firstValue(row, [
-      'Address',
-      'Street Address',
-      'Mailing Address'
-    ]) || '[ADDRESS]';
+ const address =
+  firstValue(row, [
+    'Address',
+    'Street Address',
+    'Mailing Address'
+  ]) ||
+  normalizeWhitespace(row.__candidateAddress || '') ||
+  '[ADDRESS]';
 
   const city =
     firstValue(row, ['City', 'Mailing City']);
