@@ -664,6 +664,28 @@ const relevantReports = reportList.filter((report) => {
       .toLowerCase() === requestedOffice
   );
 });
+
+  console.log(
+  "LOTT RELEVANT REPORTS:",
+  JSON.stringify(
+    {
+      candidate,
+      requestedOffice,
+      relevantFilerIds: [...relevantFilerIds],
+      relevantCampaignIds: [...relevantCampaignIds],
+      reports: relevantReports.map((report) => ({
+        reportName: report?.reportName,
+        candidateFilerId: report?.candidateFilerId,
+        campaignId: report?.campaignId,
+        office: report?.office,
+        electionDate: report?.electionDate,
+        submittedDate: report?.submittedDate
+      }))
+    },
+    null,
+    2
+  )
+);
   
   const electionDate = input?.electionDate
   ? new Date(input.electionDate)
@@ -696,7 +718,26 @@ const matchesElectionYear =
       return isElectionRelated && matchesElectionYear;
     })
   : [];
-
+console.log(
+  "LOTT ELECTION-RELATED REPORTS:",
+  JSON.stringify(
+    {
+      candidate,
+      electionYear,
+      reports: electionRelatedReports.map((report) => ({
+        reportName: report?.reportName,
+        electionYear: report?.electionYear,
+        election: report?.election,
+        candidateFilerId: report?.candidateFilerId,
+        campaignId: report?.campaignId,
+        office: report?.office,
+        submittedDate: report?.submittedDate
+      }))
+    },
+    null,
+    2
+  )
+);
 
 
 const hasInitialReport = relevantReports.some((report) =>
@@ -711,6 +752,26 @@ const hasPreElectionReport = electionRelatedReports.some((report) =>
   String(report?.reportName || "")
     .toLowerCase()
     .includes("pre-election")
+);
+
+  console.log(
+  "LOTT REPORT FLAGS:",
+  JSON.stringify(
+    {
+      candidate,
+      electionYear,
+      hasInitialReport,
+      hasPreElectionReport,
+      relevantReportNames: relevantReports.map(
+        (report) => report?.reportName
+      ),
+      electionRelatedReportNames: electionRelatedReports.map(
+        (report) => report?.reportName
+      )
+    },
+    null,
+    2
+  )
 );
   
   const reportsWithinFourYears = relevantReports.filter((report) => {
