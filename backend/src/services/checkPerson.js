@@ -201,7 +201,7 @@ for (let i = 0; i < jurisdictions.length; i += 1) {
     },
     body: JSON.stringify({
       filerName: surname.toLowerCase(),
-      positionSearch: jurisdictionName,
+      positionSearch: jurisdictionPositionInfo.name,
       positionInfo: {
         id: jurisdictionPositionInfo.id,
         name: jurisdictionPositionInfo.name,
