@@ -587,11 +587,11 @@ const startDate = deficiency?.startDate
   : '';
   let text = filing + (year ? ` (${year})` : '');
 
-  if (filing === 'Initial Report' && dueDate) {
+  if (filing.includes('Initial') && dueDate) {
     text = `A ${year} Initial Campaign Disclosure, which was due no later than ${dueDate}, has not been filed.`;
   }
 
- if (filing === "Pre-Election Report" && startDate && dueDate) {
+ if (filing.includes('Pre-Election') && startDate && dueDate) {
   text = `A ${year} Pre-Election Campaign Disclosure, which was required to be filed between ${startDate} and ${dueDate}, has not been filed.`;
 }
 
