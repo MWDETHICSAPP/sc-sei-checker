@@ -227,11 +227,23 @@ for (let i = 0; i < jurisdictions.length; i += 1) {
     throw error;
   }
 
-  const payload = await response.json();
+ const payload = await response.json();
 
-  if (Array.isArray(payload.result)) {
-    allMatches.push(...payload.result);
-  }
+console.log(
+  "SEI MULTI-JURISDICTION SEARCH:",
+  jurisdictionName,
+  jurisdictionPositionInfo.name,
+  Array.isArray(payload.result) ? payload.result.length : 0
+);
+
+if (Array.isArray(payload.result)) {
+  console.log(
+    "SEI MATCHES:",
+    JSON.stringify(payload.result, null, 2)
+  );
+
+  allMatches.push(...payload.result);
+}
 }
 
 const uniqueMatches = [
@@ -251,6 +263,10 @@ const uniqueMatches = [
   ).values()
 ];
 
+  console.log(
+  "SEI UNIQUE MATCHES:",
+  JSON.stringify(uniqueMatches, null, 2)
+);
 return {
   matches: uniqueMatches,
   positionInfo,
