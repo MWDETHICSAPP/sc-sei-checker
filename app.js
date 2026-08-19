@@ -848,7 +848,9 @@ const deficiencyBox = (text) =>
       })
     ]
   : [])
-
+  ]
+});
+  
  const campaignOffice =
   normalizeWhitespace(row.__campaignOffice || '');
 
