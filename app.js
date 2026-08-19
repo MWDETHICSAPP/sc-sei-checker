@@ -586,6 +586,9 @@ const startDate = deficiency?.startDate
     })
   : '';
   let text = filing + (year ? ` (${year})` : '');
+    if (filing.includes('Quarter') && dueDate) {
+  text = `The ${filing}, which was due on ${dueDate}, has not been filed.`;
+}
 
   if (filing.includes('Initial') && dueDate) {
     text = `A ${year} Initial Campaign Disclosure, which was due no later than ${dueDate}, has not been filed.`;
