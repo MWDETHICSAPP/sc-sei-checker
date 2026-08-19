@@ -271,7 +271,8 @@ const people = validRows.map((row) => ({
       row.__deficiencies = Array.isArray(result.deficiencies)
   ? result.deficiencies
   : [];
-
+console.log("DEFICIENCIES FOR", row.__name, row.__deficiencies);
+      
 const candidateContactAddress =
   result.campaignCompliance?.candidateFilingExportRow?.["Contact Address"] || '';
 
