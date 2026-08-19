@@ -617,6 +617,17 @@ if (input?.electionDate && candidate) {
           candidateFilingMatch
         );
     }
+
+console.log(
+  "SC VOTES CANDIDATE FILING MATCH:",
+  JSON.stringify(candidateFilingMatch, null, 2)
+);
+
+console.log(
+  "SC VOTES CANDIDATE EXPORT ROW:",
+  JSON.stringify(candidateFilingExportRow, null, 2)
+);
+    
   } catch (error) {
     console.error(
       "SC Votes candidate filing lookup failed:",
