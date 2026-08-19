@@ -340,8 +340,43 @@ const campaignDeficiencies =
   Array.isArray(campaignCompliance?.campaignDeficiencies)
     ? campaignCompliance.campaignDeficiencies
     : [];
+
+  const candidateParty = String(
+  campaignCompliance?.candidateFilingMatch?.party || ""
+)
+  .trim()
+  .toLowerCase();
+
+const candidateStatus = String(
+  campaignCompliance?.candidateFilingMatch?.status || ""
+)
+  .trim()
+  .toLowerCase();
+
+const isCandidate =
+  normalizedRole.includes("candidate");
+
+const isElectedOfficial =
+  normalizedRole.includes("elected");
+
+
+const candidateRequiresSei =
+  isCandidate &&
+  (
+    (candidateParty &&
+      candidateParty !== "nonpartisan") ||
+    (
+      candidateParty === "nonpartisan" &&
+      candidateStatus === "elected"
+    )
+  );
+
+const requiresSei =
+  !isCandidate ||
+  isElectedOfficial ||
+  candidateRequiresSei;
   
-  if (matches.length === 0) {
+  if (matches.length === 0 && requiresSei) {
     return {
       input: normalized,
       campaignCompliance,
@@ -368,6 +403,30 @@ const campaignDeficiencies =
     };
   }
 
+if (matches.length === 0 && !requiresSei) {
+  return {
+    input: normalized,
+    campaignCompliance,
+    deficiencies: campaignDeficiencies,
+    search: {
+      surname,
+      adapter: "sc-ethics-public-api"
+    },
+    status:
+      campaignDeficiencies.length > 0
+        ? "Not Filed"
+        : "Filed",
+    confidence: 1,
+    matchedFilingName: "",
+    filedDate: "",
+    filingUrl: "",
+    notes:
+      candidateParty === "nonpartisan"
+        ? `No ${year} SEI was required because the candidate was not elected in the nonpartisan race.`
+        : `No ${year} SEI deficiency was assessed.`
+  };
+}
+  
   if (matches.length === 1) {
     const match = matches[0];
 
