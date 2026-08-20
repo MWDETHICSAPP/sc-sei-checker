@@ -430,9 +430,9 @@ console.log(
 const matchesByYear = new Map(
   matches
     .map((match) => {
-     const reportYear =
-  Number(String(match.report || "").match(/\b20\d{2}\b/)?.[0]) ||
-  (Number(match.reportYear) + 1); 
+   const reportYear =
+  Number(match.reportYear) ||
+  Number(String(match.report || "").match(/\b20\d{2}\b/)?.[0]);  
 
       return [reportYear, match];
     })
