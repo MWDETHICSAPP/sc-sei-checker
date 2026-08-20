@@ -584,7 +584,7 @@ if (type === "SEI") {
     text
   };
 }
-}
+
   
 
   if (type === 'Campaign Disclosure') {
