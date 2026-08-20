@@ -156,7 +156,7 @@ async function searchPublicSei({
   surname,
   jurisdiction,
   office,
-  year
+  years
 }) {
   
   const positions = await getPositions();
@@ -196,6 +196,12 @@ const searchTargets = isSolicitor
   ? jurisdictions.map((value) => `${value} County`)
   : jurisdictions;
 
+  const yearsToSearch = Array.isArray(years)
+  ? years
+  : [years];
+
+for (const reportYear of yearsToSearch) {
+
 for (let i = 0; i < searchTargets.length; i += 1) {
   const jurisdictionName = searchTargets[i];
 
@@ -228,7 +234,7 @@ for (let i = 0; i < searchTargets.length; i += 1) {
         type: jurisdictionPositionInfo.type,
         typeId: jurisdictionPositionInfo.typeId
       },
-      reportYear: Number(year)
+      reportYear: Number(reportYear)
     })
   });
 
@@ -256,7 +262,7 @@ if (Array.isArray(payload.result)) {
   allMatches.push(...payload.result);
 }
 }
-
+}
 const uniqueMatches = [
   ...new Map(
     allMatches.map((match) => {
@@ -310,7 +316,16 @@ const requiresCampaignCheck =
 }
 
   const surname = extractSurname(normalized.name);
-  const year = Number(normalized.year || 2026);
+  const year = Number(
+  normalized.year || new Date().getFullYear()
+);
+
+  const seiYears = [
+  year - 3,
+  year - 2,
+  year - 1,
+  year
+];
 
   let campaignCompliance = null;
 
@@ -376,7 +391,7 @@ const searchResult = await searchPublicSei({
   surname,
   jurisdiction: seiJurisdiction,
   office: normalized.office,
-  year
+  years: seiYears
 });
 
   if (searchResult.positionLookupFailed) {
@@ -398,6 +413,15 @@ const searchResult = await searchPublicSei({
   }
 
   const matches = searchResult.matches;
+  const seiDeficiencies = [];
+
+const matchesByYear = new Map(
+  matches.map((match) => [
+    Number(match.reportYear || match.report),
+    match
+  ])
+);
+  
 const campaignDeficiencies =
   Array.isArray(campaignCompliance?.campaignDeficiencies)
     ? campaignCompliance.campaignDeficiencies
@@ -496,6 +520,7 @@ if (matches.length === 0 && !requiresSei) {
     return {
       input: normalized,
       campaignCompliance,
+      seiMatches: matches,
       deficiencies: campaignDeficiencies,
       search: {
         surname,
@@ -522,6 +547,7 @@ if (matches.length === 0 && !requiresSei) {
   return {
     input: normalized,
     campaignCompliance,
+    seiMatches: matches,
     deficiencies: campaignDeficiencies,
     search: {
       surname,
