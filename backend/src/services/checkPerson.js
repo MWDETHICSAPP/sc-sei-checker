@@ -234,7 +234,7 @@ for (let i = 0; i < searchTargets.length; i += 1) {
         type: jurisdictionPositionInfo.type,
         typeId: jurisdictionPositionInfo.typeId
       },
-      reportYear: Number(reportYear)
+      reportYear: Number(reportYear) - 1
     })
   });
 
