@@ -416,10 +416,15 @@ const searchResult = await searchPublicSei({
   const seiDeficiencies = [];
 
 const matchesByYear = new Map(
-  matches.map((match) => [
-    Number(match.reportYear || match.report),
-    match
-  ])
+  matches
+    .map((match) => {
+      const reportYear =
+        Number(match.reportYear) ||
+        Number(String(match.report || "").match(/\b20\d{2}\b/)?.[0]);
+
+      return [reportYear, match];
+    })
+    .filter(([reportYear]) => reportYear)
 );
   
 const campaignDeficiencies =
@@ -461,21 +466,29 @@ const requiresSei =
   !isCandidate ||
   isElectedOfficial ||
   candidateRequiresSei;
+  if (requiresSei) {
+  for (const seiYear of seiYears) {
+    if (!matchesByYear.has(seiYear)) {
+      seiDeficiencies.push({
+        type: "SEI",
+        filing: `${seiYear} Statement of Economic Interests`,
+        status: "Missing",
+        year: seiYear,
+        dueDate: `${seiYear}-03-30T00:00:00.000Z`
+      });
+    }
+  }
+}
   
   if (matches.length === 0 && requiresSei) {
     return {
       input: normalized,
       campaignCompliance,
-      deficiencies: [
- {
-  type: "SEI",
-  filing: `${year} Statement of Economic Interests`,
-  status: "Missing",
-  year,
-  dueDate: `${year}-03-30T00:00:00.000Z`
-},
+    deficiencies: [
+  ...seiDeficiencies,
   ...campaignDeficiencies
 ],
+      
       search: {
         surname,
         adapter: "sc-ethics-public-api"
@@ -543,17 +556,31 @@ if (matches.length === 0 && !requiresSei) {
     };
   }
 
-  
+const uniqueFilerNames = [
+  ...new Set(
+    matches
+      .map((match) => normalizeText(match.filerName))
+      .filter(Boolean)
+  )
+];  
   return {
     input: normalized,
     campaignCompliance,
     seiMatches: matches,
-    deficiencies: campaignDeficiencies,
+    deficiencies: [
+  ...seiDeficiencies,
+  ...campaignDeficiencies
+],
     search: {
       surname,
       adapter: "sc-ethics-public-api"
     },
-    status: "Manual Review",
+   status:
+  uniqueFilerNames.length > 1
+    ? "Manual Review"
+    : seiDeficiencies.length > 0 || campaignDeficiencies.length > 0
+      ? "Not Filed"
+      : "Filed", 
     confidence: Math.max(
       ...matches.map((match) =>
         Number(match.percentageAccuracy || 0)
@@ -566,8 +593,9 @@ if (matches.length === 0 && !requiresSei) {
       .join("; "),
     filingUrl: buildFilingUrl(),
     notes:
-      `${matches.length} possible ${year} filing matches ` +
-      "were found. Confirm the filer manually."
+  uniqueFilerNames.length > 1
+    ? `${uniqueFilerNames.length} possible filers were found. Confirm the filer manually.`
+    : `${matches.length} SEI reports found for the matched filer.`
   };  
 }
 
