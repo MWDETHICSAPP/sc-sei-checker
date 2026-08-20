@@ -418,9 +418,9 @@ const searchResult = await searchPublicSei({
 const matchesByYear = new Map(
   matches
     .map((match) => {
-      const reportYear =
-        Number(match.reportYear) ||
-        Number(String(match.report || "").match(/\b20\d{2}\b/)?.[0]);
+     const reportYear =
+  Number(String(match.report || "").match(/\b20\d{2}\b/)?.[0]) ||
+  (Number(match.reportYear) + 1); 
 
       return [reportYear, match];
     })
@@ -468,15 +468,37 @@ const requiresSei =
   candidateRequiresSei;
   if (requiresSei) {
   for (const seiYear of seiYears) {
-    if (!matchesByYear.has(seiYear)) {
-      seiDeficiencies.push({
-        type: "SEI",
-        filing: `${seiYear} Statement of Economic Interests`,
-        status: "Missing",
-        year: seiYear,
-        dueDate: `${seiYear}-03-30T00:00:00.000Z`
-      });
-    }
+  const seiMatch = matchesByYear.get(seiYear);
+
+if (!seiMatch) {
+  seiDeficiencies.push({
+    type: "SEI",
+    filing: `${seiYear} Statement of Economic Interests`,
+    status: "Missing",
+    year: seiYear,
+    dueDate: `${seiYear}-03-30T00:00:00.000Z`
+  });
+} else {
+  const dueDate = new Date(`${seiYear}-03-30T23:59:59`);
+  const graceDeadline = new Date(dueDate);
+  graceDeadline.setDate(graceDeadline.getDate() + 5);
+
+  const filedDate = new Date(seiMatch.updated);
+
+  if (
+    !Number.isNaN(filedDate.getTime()) &&
+    filedDate > graceDeadline
+  ) {
+    seiDeficiencies.push({
+      type: "SEI",
+      filing: `${seiYear} Statement of Economic Interests`,
+      status: "Late",
+      year: seiYear,
+      dueDate: `${seiYear}-03-30T00:00:00.000Z`,
+      filedDate: seiMatch.updated
+    });
+  }
+} 
   }
 }
   
