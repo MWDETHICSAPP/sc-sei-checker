@@ -547,23 +547,43 @@ const letterDeficiencies = rawDeficiencies.map((deficiency) => {
   const type = String(deficiency?.type || '').trim();
   const filing = String(deficiency?.filing || '').trim();
 
-if (type === 'SEI') {
+if (type === "SEI") {
   const dueDate = deficiency?.dueDate
-    ? new Date(deficiency.dueDate).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC'
+    ? new Date(deficiency.dueDate).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC"
       })
-    : '';
+    : "";
+
+  const filedDate = deficiency?.filedDate
+    ? new Date(deficiency.filedDate).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC"
+      })
+    : "";
+
+  const status = String(deficiency?.status || "").trim().toLowerCase();
+
+  let text;
+
+  if (status === "late" && filedDate) {
+    text = `${filing || `${filingYear} Statement of Economic Interests`}, which was due on ${dueDate}, was filed late on ${filedDate}.`;
+  } else if (dueDate) {
+    text = `${filing || `${filingYear} Statement of Economic Interests`}, which was due on ${dueDate}, has not been filed.`;
+  } else {
+    text = filing || `${filingYear} Statement of Economic Interests`;
+  }
 
   return {
     ...deficiency,
-    category: 'SEI',
-    text: dueDate
-      ? `${filing || `${filingYear} Statement of Economic Interests`}, which was due on ${dueDate}, has not been filed.`
-      : filing || `${filingYear} Statement of Economic Interests`
+    category: "SEI",
+    text
   };
+}
 }
   
 
