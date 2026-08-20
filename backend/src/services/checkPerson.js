@@ -417,11 +417,13 @@ const searchResult = await searchPublicSei({
 console.log(
   "SEI MATCH DEBUG",
   normalized.name,
-  matches.map((m) => ({
-    report: m.report,
-    reportYear: m.reportYear,
-    updated: m.updated
-  }))
+  JSON.stringify(
+    matches.map((m) => ({
+      report: m.report,
+      reportYear: m.reportYear,
+      updated: m.updated
+    }))
+  )
 );
   
 
