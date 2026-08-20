@@ -364,6 +364,46 @@ function renderRows(rows) {
       persist();
     });
 
+  if (
+  Array.isArray(row.__deficiencies) &&
+  row.__deficiencies.length > 0
+) {
+  const letterButton = document.createElement("button");
+  letterButton.type = "button";
+  letterButton.textContent = "Generate Letter";
+  letterButton.className = "individual-letter-btn";
+
+  letterButton.addEventListener("click", async () => {
+    letterButton.disabled = true;
+    const originalText = letterButton.textContent;
+    letterButton.textContent = "Generating...";
+
+    try {
+      const { doc, Packer, fullName, filingYear } =
+        buildAnnualSeiWordDocument(row);
+
+      const blob = await Packer.toBlob(doc);
+
+      downloadBlob(
+        blob,
+        `${safeFileName(fullName)}_${filingYear}_Compliance_Letter.docx`
+      );
+    } catch (error) {
+      console.error(error);
+      alert(
+        `The Word letter could not be generated: ${
+          error.message || error
+        }`
+      );
+    } finally {
+      letterButton.disabled = false;
+      letterButton.textContent = originalText;
+    }
+  });
+
+  notes.parentElement.appendChild(letterButton);
+}
+    
     resultsBody.appendChild(fragment);
   });
 }
