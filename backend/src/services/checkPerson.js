@@ -438,6 +438,27 @@ const matchesByYear = new Map(
     })
     .filter(([reportYear]) => reportYear)
 );
+
+  const seiDiagnostic =
+  normalized.name === "Jason Branham"
+    ? {
+        seiYears,
+        rawMatches: matches.map((m) => ({
+          report: m.report,
+          reportYear: m.reportYear,
+          updated: m.updated,
+          filerName: m.filerName
+        })),
+        matchesByYear: [...matchesByYear.entries()].map(
+          ([key, match]) => ({
+            key,
+            report: match.report,
+            reportYear: match.reportYear,
+            updated: match.updated
+          })
+        )
+      }
+    : null;
   
 const campaignDeficiencies =
   Array.isArray(campaignCompliance?.campaignDeficiencies)
@@ -601,6 +622,7 @@ const uniqueFilerNames = [
     input: normalized,
     campaignCompliance,
     seiMatches: matches,
+    seiDiagnostic,
     deficiencies: [
   ...seiDeficiencies,
   ...campaignDeficiencies
