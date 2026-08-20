@@ -234,7 +234,7 @@ for (let i = 0; i < searchTargets.length; i += 1) {
         type: jurisdictionPositionInfo.type,
         typeId: jurisdictionPositionInfo.typeId
       },
-      reportYear: Number(reportYear) - 1
+      reportYear: Number(reportYear)
     })
   });
 
@@ -414,6 +414,16 @@ const searchResult = await searchPublicSei({
 
   const matches = searchResult.matches;
   const seiDeficiencies = [];
+console.log(
+  "SEI MATCH DEBUG",
+  normalized.name,
+  matches.map((m) => ({
+    report: m.report,
+    reportYear: m.reportYear,
+    updated: m.updated
+  }))
+);
+  
 
 const matchesByYear = new Map(
   matches
