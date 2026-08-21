@@ -8,10 +8,10 @@ main { max-width:1200px; margin:0 auto; padding:24px 20px calc(40px + env(safe-a
 .card { background:white; border-radius:18px; padding:22px; box-shadow:0 8px 30px rgba(17,24,39,.07); margin-bottom:18px; }
 .hero h2 { margin-top:0; font-size:24px; }
 .muted { color:#6b7280; }
-.upload { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:12px; background:#111827; color:white; font-weight:700; cursor:pointer; }
+.upload { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:12px; background:#003B5C; color:white; font-weight:700; cursor:pointer; }
 .upload input { display:none; }
 button, select, input { font:inherit; }
-button { min-height:44px; border:0; border-radius:11px; padding:0 16px; background:#111827; color:white; font-weight:700; }
+button { min-height:44px; border:0; border-radius:11px; padding:0 16px; background:#003B5C; color:white; font-weight:700; }
 button.secondary { background:white; color:#111827; border:1px solid #d1d5db; }
 .controls { display:grid; grid-template-columns:1.2fr 1.2fr .6fr auto; gap:14px; align-items:end; }
 .field { display:grid; gap:7px; }
