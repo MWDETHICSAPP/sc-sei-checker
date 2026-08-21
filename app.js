@@ -401,7 +401,10 @@ function renderRows(rows) {
     }
   });
 
-  notes.parentElement.appendChild(letterButton);
+  const actionCell = document.createElement("td");
+actionCell.className = "action-cell";
+actionCell.appendChild(letterButton);
+tr.appendChild(actionCell);
 }
     
     resultsBody.appendChild(fragment);
