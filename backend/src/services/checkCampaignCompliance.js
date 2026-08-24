@@ -359,6 +359,23 @@ const candidate = String(
     );
   }
 
+  console.log(
+  "CAMPAIGN REPORT SEARCH INPUT:",
+  JSON.stringify(
+    {
+      candidate,
+      office: input?.office || "",
+      electionYear: input?.electionDate
+        ? new Date(input.electionDate).getFullYear()
+        : reportingYear,
+      reportType: input?.reportType || "Any",
+      electionType: input?.electionType || "Any",
+    },
+    null,
+    2
+  )
+);
+
   const reports = await response.json();
 const reportList = Array.isArray(reports) ? reports : [];
 console.log(
