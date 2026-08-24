@@ -336,21 +336,24 @@ const candidate = String(
     };
   }
 
-  const response = await fetch(CAMPAIGN_REPORTS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-   body: JSON.stringify({
+const buildCampaignSearchBody = (office) => ({
   candidate,
-  office: input?.office || "",
+  office,
   electionYear: input?.electionDate
     ? new Date(input.electionDate).getFullYear()
     : reportingYear,
   reportType: input?.reportType || "Any",
   electionType: input?.electionType || "Any",
-}),
+});
+
+const searchCampaignReports = async (office) => {
+  const response = await fetch(CAMPAIGN_REPORTS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(buildCampaignSearchBody(office)),
   });
 
   if (!response.ok) {
@@ -359,25 +362,31 @@ const candidate = String(
     );
   }
 
-  console.log(
+  const results = await response.json();
+  return Array.isArray(results) ? results : [];
+};
+
+const requestedSearchOffice = input?.office || "";
+
+console.log(
   "CAMPAIGN REPORT SEARCH INPUT:",
-  JSON.stringify(
-    {
-      candidate,
-      office: input?.office || "",
-      electionYear: input?.electionDate
-        ? new Date(input.electionDate).getFullYear()
-        : reportingYear,
-      reportType: input?.reportType || "Any",
-      electionType: input?.electionType || "Any",
-    },
-    null,
-    2
-  )
+  JSON.stringify(buildCampaignSearchBody(requestedSearchOffice), null, 2)
 );
 
-  const reports = await response.json();
-const reportList = Array.isArray(reports) ? reports : [];
+// First try the normal, office-filtered search.
+let reportList = await searchCampaignReports(requestedSearchOffice);
+
+// If an office was supplied but that search returned nothing,
+// retry by surname/election year without the office filter.
+if (requestedSearchOffice && reportList.length === 0) {
+  console.log(
+    "CAMPAIGN REPORT FALLBACK SEARCH:",
+    JSON.stringify(buildCampaignSearchBody(""), null, 2)
+  );
+
+  reportList = await searchCampaignReports("");
+}
+  
 console.log(
   "RAW REPORT SUMMARY:",
   reportList.map((report) => ({
