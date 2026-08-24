@@ -400,6 +400,9 @@ const candidateNameParts = candidateName
       part.length > 1
   );
 
+   const requestedOffice = String(input?.office || "")
+  .trim()
+  .toLowerCase();
 const profileSeedReport = reportList.find((report) => {
   if (!report?.candidateFilerId && !report?.seiFilerId) {
     return false;
@@ -431,23 +434,7 @@ const profileSeedReport = reportList.find((report) => {
     reportNameParts.includes(part)
   );
 });
-  }
-
-  const reportNameParts = String(report?.candidateName || "")
-    .toLowerCase()
-    .replace(/[.,]/g, " ")
-    .split(/\s+/)
-    .filter(
-      (part) =>
-        part &&
-        !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
-        part.length > 1
-    );
-
-  return candidateNameParts.every((part) =>
-    reportNameParts.includes(part)
-  );
-});
+ 
 
 let campaignProfile = null;
 
@@ -463,9 +450,7 @@ if (profileSeedReport) {
 );
   
    
-   const requestedOffice = String(input?.office || "")
-  .trim()
-  .toLowerCase();
+  
 
 const openOffices = Array.isArray(campaignProfile?.openOffices)
   ? campaignProfile.openOffices
