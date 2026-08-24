@@ -344,7 +344,7 @@ const candidate = String(
     },
     body: JSON.stringify({
       candidate,
-      office: input?.office || "",
+      office: "",
       electionYear: input?.electionDate
   ? new Date(input.electionDate).getFullYear()
   : reportingYear,
