@@ -342,15 +342,15 @@ const candidate = String(
       "Content-Type": "application/json",
       Accept: "application/json"
     },
-    body: JSON.stringify({
-      candidate,
-      office: "",
-      electionYear: input?.electionDate
-  ? new Date(input.electionDate).getFullYear()
-  : reportingYear,
-      reportType: input?.reportType || "Any",
-      electionType: input?.electionType || "Any",
-        })
+   body: JSON.stringify({
+  candidate,
+  office: input?.office || "",
+  electionYear: input?.electionDate
+    ? new Date(input.electionDate).getFullYear()
+    : reportingYear,
+  reportType: input?.reportType || "Any",
+  electionType: input?.electionType || "Any",
+}),
   });
 
   if (!response.ok) {
