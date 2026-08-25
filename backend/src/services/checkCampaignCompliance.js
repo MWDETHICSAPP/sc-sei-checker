@@ -765,6 +765,7 @@ const relevantReports = reportList.filter((report) => {
       relevantCampaignIds: [...relevantCampaignIds],
       reports: relevantReports.map((report) => ({
         reportName: report?.reportName,
+        reportId: report?.reportId,
         candidateFilerId: report?.candidateFilerId,
         campaignId: report?.campaignId,
         office: report?.office,
@@ -816,6 +817,7 @@ console.log(
       electionYear,
       reports: electionRelatedReports.map((report) => ({
         reportName: report?.reportName,
+        reportId: report?.reportId,
         electionYear: report?.electionYear,
         election: report?.election,
         candidateFilerId: report?.candidateFilerId,
