@@ -268,8 +268,14 @@ async function getCampaignReportDetail(reportId) {
   }
 const detail = await response.json();
 console.log(
-  "CAMPAIGN REPORT DETAIL KEYS:",
-  Object.keys(detail || {})
+  "CAMPAIGN REPORT DETAIL:",
+  {
+    reportId,
+    reportType: detail?.reportType,
+    filingPeriod: detail?.filingPeriod,
+    electionDate: detail?.electionDate,
+    submittedDate: detail?.overview?.submittedDate
+  }
 );
 
 console.log(
