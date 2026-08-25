@@ -267,7 +267,14 @@ async function getCampaignReportDetail(reportId) {
     );
   }
 
-  return response.json();
+const detail = await response.json();
+
+console.log(
+  "CAMPAIGN REPORT DETAIL KEYS:",
+  Object.keys(detail || {})
+);
+
+return detail; 
 }
 async function getOriginalSubmissionDate(reportId) {
   const detail = await getCampaignReportDetail(reportId);
