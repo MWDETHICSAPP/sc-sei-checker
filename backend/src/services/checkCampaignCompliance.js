@@ -412,37 +412,45 @@ const candidateNameParts = candidateName
    const requestedOffice = String(input?.office || "")
   .trim()
   .toLowerCase();
-const profileSeedReport = reportList.find((report) => {
-  if (!report?.candidateFilerId && !report?.seiFilerId) {
-    return false;
-  }
 
-  const reportOffice = String(report?.office || "")
-    .trim()
-    .toLowerCase();
+  let profileSeedReport = null;
 
-  // If the upload supplied an office, use that as the primary
-  // way to identify the correct campaign report.
-  if (requestedOffice) {
-    return reportOffice === requestedOffice;
-  }
+if (requestedOffice) {
+  profileSeedReport =
+    reportList.find((report) => {
+      if (!report?.candidateFilerId && !report?.seiFilerId) {
+        return false;
+      }
 
-  // Fallback for rows without an office.
-  const reportNameParts = String(report?.candidateName || "")
-    .toLowerCase()
-    .replace(/[.,]/g, " ")
-    .split(/\s+/)
-    .filter(
-      (part) =>
-        part &&
-        !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
-        part.length > 1
-    );
+      const reportOffice = String(report?.office || "")
+        .trim()
+        .toLowerCase();
 
-  return candidateNameParts.every((part) =>
-    reportNameParts.includes(part)
-  );
-});
+      return reportOffice === requestedOffice;
+    }) || null;
+} else {
+  profileSeedReport =
+    reportList.find((report) => {
+      if (!report?.candidateFilerId && !report?.seiFilerId) {
+        return false;
+      }
+
+      const reportNameParts = String(report?.candidateName || "")
+        .toLowerCase()
+        .replace(/[.,]/g, " ")
+        .split(/\s+/)
+        .filter(
+          (part) =>
+            part &&
+            !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
+            part.length > 1
+        );
+
+      return candidateNameParts.every((part) =>
+        reportNameParts.includes(part)
+      );
+    }) || null;
+}
  
 
 let campaignProfile = null;
