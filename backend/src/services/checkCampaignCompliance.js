@@ -333,6 +333,68 @@ console.log(
 
   return Number.isNaN(endingBalance) ? null : endingBalance;
 }
+
+function parseCampaignTransactionDate(transaction) {
+  const dateSort = String(transaction?.dateSort || "").trim();
+
+  if (dateSort && !dateSort.startsWith("0001-01-01")) {
+    const parsedDateSort = new Date(dateSort);
+
+    if (!Number.isNaN(parsedDateSort.getTime())) {
+      return parsedDateSort;
+    }
+  }
+
+  const displayDate = String(transaction?.date || "").trim();
+
+  if (displayDate) {
+    const parsedDisplayDate = new Date(displayDate);
+
+    if (!Number.isNaN(parsedDisplayDate.getTime())) {
+      return parsedDisplayDate;
+    }
+  }
+
+  return null;
+}
+
+function getInitialThresholdDate(detail) {
+  if (!detail) return null;
+
+  const contributions = Array.isArray(detail?.contributions?.details)
+    ? detail.contributions.details
+    : [];
+
+  const expenditures = Array.isArray(detail?.expenditures?.details)
+    ? detail.expenditures.details
+    : [];
+
+  const transactions = [
+    ...contributions.map((transaction) => ({
+      date: parseCampaignTransactionDate(transaction),
+      amount: Number(transaction?.amount) || 0
+    })),
+    ...expenditures.map((transaction) => ({
+      date: parseCampaignTransactionDate(transaction),
+      amount: Number(transaction?.amount) || 0
+    }))
+  ]
+    .filter((transaction) => transaction.date && transaction.amount > 0)
+    .sort((a, b) => a.date - b.date);
+
+  let aggregateActivity = 0;
+
+  for (const transaction of transactions) {
+    aggregateActivity += transaction.amount;
+
+    if (aggregateActivity >= 500) {
+      return transaction.date;
+    }
+  }
+
+  return null;
+}
+
 async function checkCampaignCompliance(input) {
  const candidateName = String(
   input?.name || input?.candidate || input?.lastName || ""
@@ -1002,6 +1064,56 @@ if (
     electionDate: input?.electionDate || null
   });
 }
+
+if (electionYear && initialReportForElection?.reportId) {
+  const initialDetail = await getCampaignReportDetail(
+    initialReportForElection.reportId
+  );
+
+  const initialThresholdDate = getInitialThresholdDate(initialDetail);
+
+  let initialDueDate = null;
+
+  if (initialThresholdDate) {
+    initialDueDate = new Date(initialThresholdDate);
+    initialDueDate.setUTCDate(
+      initialDueDate.getUTCDate() + 10
+    );
+  } else if (input?.electionDate) {
+    initialDueDate = new Date(input.electionDate);
+    initialDueDate.setUTCDate(
+      initialDueDate.getUTCDate() - 15
+    );
+  }
+
+  const originalSubmittedDate =
+    await getOriginalSubmissionDate(
+      initialReportForElection.reportId
+    );
+
+  const submittedDate = originalSubmittedDate
+    ? new Date(originalSubmittedDate)
+    : null;
+
+  const gracePeriodDeadline = initialDueDate
+    ? getGracePeriodDeadline(initialDueDate)
+    : null;
+
+  if (
+    submittedDate &&
+    gracePeriodDeadline &&
+    submittedDate > gracePeriodDeadline
+  ) {
+    campaignDeficiencies.push({
+      type: "Campaign Disclosure",
+      filing: "Initial Report",
+      electionYear,
+      dueDate: initialDueDate.toISOString(),
+      filedDate: originalSubmittedDate,
+      electionDate: input?.electionDate || null
+    });
+  }
+}  
 
 if (electionYear && !hasPreElectionReport) {
   const preElectionDueDate = getPreElectionDueDate(
