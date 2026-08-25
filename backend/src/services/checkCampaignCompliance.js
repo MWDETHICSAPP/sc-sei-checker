@@ -829,6 +829,26 @@ console.log(
   )
 );
 
+const initialReportForElection = electionRelatedReports.find((report) =>
+  String(report?.reportName || "")
+    .toLowerCase()
+    .includes("initial")
+);
+
+console.log(
+  "INITIAL REPORT TARGET:",
+  initialReportForElection
+    ? {
+        reportId: initialReportForElection.reportId,
+        reportName: initialReportForElection.reportName,
+        office: initialReportForElection.office
+      }
+    : null
+);
+
+if (initialReportForElection?.reportId) {
+  await getCampaignReportDetail(initialReportForElection.reportId);
+}  
 
 const hasInitialReport = relevantReports.some((report) =>
   String(report?.reportName || "")
