@@ -839,13 +839,15 @@ const initialReportForElection = electionRelatedReports.find((report) =>
 
 console.log(
   "INITIAL REPORT TARGET:",
-  initialReportForElection
-    ? {
-        reportId: initialReportForElection.reportId,
-        reportName: initialReportForElection.reportName,
-        office: initialReportForElection.office
-      }
-    : null
+  JSON.stringify(
+    initialReportForElection
+      ? {
+          reportId: initialReportForElection.reportId,
+          reportName: initialReportForElection.reportName,
+          office: initialReportForElection.office
+        }
+      : null
+  )
 );
 
 if (initialReportForElection?.reportId) {
