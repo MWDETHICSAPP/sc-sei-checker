@@ -284,7 +284,6 @@ console.log(
 
 return detail;
 
-return detail; 
 }
 async function getOriginalSubmissionDate(reportId) {
   const detail = await getCampaignReportDetail(reportId);
