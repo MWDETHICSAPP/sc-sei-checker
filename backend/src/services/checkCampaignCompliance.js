@@ -851,8 +851,22 @@ console.log(
 );
 
 if (initialReportForElection?.reportId) {
-  await getCampaignReportDetail(initialReportForElection.reportId);
-}  
+  const initialDetail = await getCampaignReportDetail(initialReportForElection.reportId);
+
+  console.log(
+    "INITIAL REPORT DETAIL:",
+    JSON.stringify({
+      reportId: initialReportForElection.reportId,
+      reportType: initialDetail?.reportType,
+      filingPeriod: initialDetail?.filingPeriod,
+      electionDate: initialDetail?.electionDate,
+      submittedDate: initialDetail?.overview?.submittedDate,
+      contributionsTotal: initialDetail?.contributions?.contributionsTotal,
+      expendituresTotal: initialDetail?.expenditures?.expendituresTotal,
+      versions: initialDetail?.versions
+    })
+  );
+}
 
 const hasInitialReport = relevantReports.some((report) =>
   String(report?.reportName || "")
