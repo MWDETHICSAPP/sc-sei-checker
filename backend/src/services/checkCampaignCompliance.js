@@ -266,7 +266,7 @@ async function getCampaignReportDetail(reportId) {
       `Campaign report detail search failed with status ${response.status}`
     );
   }
-
+const detail = await response.json();
 console.log(
   "CAMPAIGN REPORT DETAIL KEYS:",
   Object.keys(detail || {})
