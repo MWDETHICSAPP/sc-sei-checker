@@ -267,12 +267,22 @@ async function getCampaignReportDetail(reportId) {
     );
   }
 
-const detail = await response.json();
-
 console.log(
   "CAMPAIGN REPORT DETAIL KEYS:",
   Object.keys(detail || {})
 );
+
+console.log(
+  "CAMPAIGN CONTRIBUTIONS:",
+  JSON.stringify(detail?.contributions, null, 2)
+);
+
+console.log(
+  "CAMPAIGN EXPENDITURES:",
+  JSON.stringify(detail?.expenditures, null, 2)
+);
+
+return detail;
 
 return detail; 
 }
