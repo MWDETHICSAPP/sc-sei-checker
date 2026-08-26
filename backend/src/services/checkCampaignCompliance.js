@@ -44,7 +44,7 @@ async function getCampaignProfile(candidateFilerId, seiFilerId) {
     })
   });
 
-  if (!response.ok) {
+  !response.ok) {
     throw new Error(
       `Campaign profile search failed with status ${response.status}`
     );
@@ -54,7 +54,7 @@ async function getCampaignProfile(candidateFilerId, seiFilerId) {
 }
 function isDueWithinFourYears(dueDate, asOfDate = new Date()) {
   const due = new Date(dueDate);
-  if (Number.isNaN(due.getTime())) return false;
+  Number.isNaN(due.getTime())) return false;
 
   const cutoff = new Date(asOfDate);
   cutoff.setFullYear(cutoff.getFullYear() - 4);
@@ -66,7 +66,7 @@ function getQuarterlyDueDate(reportName) {
     /Quarter\s+([1-4]),\s*(\d{4})\s+Report/i
   );
 
-  if (!match) return null;
+  !match) return null;
 
   const quarter = Number(match[1]);
   const year = Number(match[2]);
@@ -82,14 +82,14 @@ function getQuarterlyDueDate(reportName) {
 }
 
 function parseElectionDate(electionDate) {
-  if (!electionDate) return null;
+  !electionDate) return null;
 
   const value = String(electionDate).trim();
 
   // ISO format: YYYY-MM-DD
   const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
-  if (isoMatch) {
+  isoMatch) {
     const [, year, month, day] = isoMatch;
 
     return new Date(
@@ -100,7 +100,7 @@ function parseElectionDate(electionDate) {
   // Spreadsheet/display format: MM/DD/YYYY
   const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
 
-  if (slashMatch) {
+  slashMatch) {
     const [, month, day, year] = slashMatch;
 
     return new Date(
@@ -114,7 +114,7 @@ function parseElectionDate(electionDate) {
 function getPreElectionDueDate(electionDate) {
   const election = parseElectionDate(electionDate);
 
-  if (!election) {
+  !election) {
     return null;
   }
 
@@ -127,7 +127,7 @@ function getPreElectionDueDate(electionDate) {
 function getPreElectionStartDate(electionDate) {
   const election = parseElectionDate(electionDate);
 
-  if (!election) {
+  !election) {
     return null;
   }
 
@@ -153,9 +153,9 @@ function isObservedFixedHoliday(date, month, day) {
   return yearsToCheck.some((year) => {
     const holiday = new Date(year, month, day);
 
-    if (holiday.getDay() === 6) {
+    holiday.getDay() === 6) {
       holiday.setDate(holiday.getDate() - 1);
-    } else if (holiday.getDay() === 0) {
+    } else holiday.getDay() === 0) {
       holiday.setDate(holiday.getDate() + 1);
     }
 
@@ -172,7 +172,7 @@ function isNthWeekday(date, month, weekday, nth) {
 }
 
 function isLastMonday(date, month) {
-  if (date.getMonth() !== month || date.getDay() !== 1) return false;
+  date.getMonth() !== month || date.getDay() !== 1) return false;
 
   const nextWeek = new Date(date);
   nextWeek.setDate(nextWeek.getDate() + 7);
@@ -186,7 +186,7 @@ function isStateOrFederalHoliday(date) {
   const day = date.getDate();
 
   // Fixed-date state/federal holidays, including observed dates
-  if (
+  
     isObservedFixedHoliday(date, 0, 1) ||   // New Year's Day
     isObservedFixedHoliday(date, 5, 19) ||  // Juneteenth
     isObservedFixedHoliday(date, 6, 4) ||   // Independence Day
@@ -1038,8 +1038,10 @@ if (
   electionYear &&
   filingFeeMeetsInitialThreshold &&
   !hasInitialReport &&
+  !initialReportForElection?.reportId &&
   !hasPriorCampaignReporting
 ) {
+  
   const filingFeeDate = parseElectionDate(
     candidateFilingExportRow?.["Date Filed"]
   );
