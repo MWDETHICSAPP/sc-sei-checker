@@ -54,7 +54,7 @@ async function getCampaignProfile(candidateFilerId, seiFilerId) {
 }
 function isDueWithinFourYears(dueDate, asOfDate = new Date()) {
   const due = new Date(dueDate);
-  Number.isNaN(due.getTime())) return false;
+  if (Number.isNaN(due.getTime())) return false;
 
   const cutoff = new Date(asOfDate);
   cutoff.setFullYear(cutoff.getFullYear() - 4);
@@ -66,7 +66,7 @@ function getQuarterlyDueDate(reportName) {
     /Quarter\s+([1-4]),\s*(\d{4})\s+Report/i
   );
 
-  !match) return null;
+  if (!match) return null;
 
   const quarter = Number(match[1]);
   const year = Number(match[2]);
@@ -82,14 +82,14 @@ function getQuarterlyDueDate(reportName) {
 }
 
 function parseElectionDate(electionDate) {
-  !electionDate) return null;
+  if (!electionDate) return null;
 
   const value = String(electionDate).trim();
 
   // ISO format: YYYY-MM-DD
   const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
-  isoMatch) {
+  if (isoMatch) {
     const [, year, month, day] = isoMatch;
 
     return new Date(
@@ -100,7 +100,7 @@ function parseElectionDate(electionDate) {
   // Spreadsheet/display format: MM/DD/YYYY
   const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
 
-  slashMatch) {
+  if (slashMatch) {
     const [, month, day, year] = slashMatch;
 
     return new Date(
@@ -114,7 +114,7 @@ function parseElectionDate(electionDate) {
 function getPreElectionDueDate(electionDate) {
   const election = parseElectionDate(electionDate);
 
-  !election) {
+  if (!election) {
     return null;
   }
 
@@ -153,9 +153,9 @@ function isObservedFixedHoliday(date, month, day) {
   return yearsToCheck.some((year) => {
     const holiday = new Date(year, month, day);
 
-    holiday.getDay() === 6) {
+    if (holiday.getDay() === 6) {
       holiday.setDate(holiday.getDate() - 1);
-    } else holiday.getDay() === 0) {
+    } else if (holiday.getDay() === 0) {
       holiday.setDate(holiday.getDate() + 1);
     }
 
@@ -172,7 +172,7 @@ function isNthWeekday(date, month, weekday, nth) {
 }
 
 function isLastMonday(date, month) {
-  date.getMonth() !== month || date.getDay() !== 1) return false;
+ if (date.getMonth() !== month || date.getDay() !== 1) return false;
 
   const nextWeek = new Date(date);
   nextWeek.setDate(nextWeek.getDate() + 7);
