@@ -44,7 +44,7 @@ async function getCampaignProfile(candidateFilerId, seiFilerId) {
     })
   });
 
-  !response.ok) {
+  if (!response.ok) {
     throw new Error(
       `Campaign profile search failed with status ${response.status}`
     );
