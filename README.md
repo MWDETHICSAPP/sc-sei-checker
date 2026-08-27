@@ -22,3 +22,4 @@ Serve the folder with any static HTTPS-capable host. For development:
 
 Then open http://localhost:8000 on a computer. For installation on iPad, deploy to an HTTPS host.
 
+Deployment test — August 27, 2026
