@@ -186,7 +186,8 @@ function isStateOrFederalHoliday(date) {
   const day = date.getDate();
 
   // Fixed-date state/federal holidays, including observed dates
-  
+
+  if (
     isObservedFixedHoliday(date, 0, 1) ||   // New Year's Day
     isObservedFixedHoliday(date, 5, 19) ||  // Juneteenth
     isObservedFixedHoliday(date, 6, 4) ||   // Independence Day
