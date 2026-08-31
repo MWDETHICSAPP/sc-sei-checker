@@ -6,7 +6,9 @@ const {
 const {
   checkCampaignCompliance
 } = require("./checkCampaignCompliance");
-
+const {
+  getCandidateHistory
+} = require("./electionHistoryService");
 const POSITIONS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/All/Offices/Positions";
 
@@ -496,6 +498,26 @@ const candidateRequiresSei =
       candidateStatus === "elected"
     )
   );
+
+  let firstWinningYearForOffice = null;
+
+if (isElectedOfficial && campaignCompliance?.candidateFilingMatch?.candidateId) {
+  try {
+    const candidateHistory = await getCandidateHistory(
+      campaignCompliance.candidateFilingMatch.candidateId
+    );
+
+    console.log(
+      "SC VOTES CANDIDATE HISTORY:",
+      JSON.stringify(candidateHistory, null, 2)
+    );
+  } catch (error) {
+    console.error(
+      "SC VOTES CANDIDATE HISTORY ERROR:",
+      error.message
+    );
+  }
+}
 
 for (const seiYear of seiYears) {
   const requiresSeiForYear =
