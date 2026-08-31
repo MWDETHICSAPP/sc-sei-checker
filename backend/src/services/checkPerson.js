@@ -541,8 +541,7 @@ if (!seiMatch) {
 } 
   }
 
-  
-  if (matches.length === 0 && requiresSei) {
+  if (matches.length === 0 && seiDeficiencies.length > 0) {
     return {
       input: normalized,
       campaignCompliance,
@@ -565,7 +564,7 @@ if (!seiMatch) {
     };
   }
 
-if (matches.length === 0 && !requiresSei) {
+if (matches.length === 0 && seiDeficiencies.length === 0) {
   return {
     input: normalized,
     campaignCompliance,
