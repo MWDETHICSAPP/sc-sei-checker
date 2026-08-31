@@ -621,6 +621,15 @@ if (!seiMatch) {
 const originalSubmittedDate =
   await getOriginalSeiSubmissionDate(seiMatch);
 
+  console.log("SEI ORIGINAL DATE DEBUG:", {
+  report: seiMatch.report,
+  reportId: seiMatch.reportId,
+  seiFilerId: seiMatch.seiFilerId,
+  candidateFilerId: seiMatch.candidateFilerId,
+  originalSubmittedDate,
+  updated: seiMatch.updated
+});
+
 const filedDate = new Date(
   originalSubmittedDate || seiMatch.updated
 );
