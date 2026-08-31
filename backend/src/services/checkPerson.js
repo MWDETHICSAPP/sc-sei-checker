@@ -540,7 +540,7 @@ if (!seiMatch) {
   }
 } 
   }
-}
+
   
   if (matches.length === 0 && requiresSei) {
     return {
