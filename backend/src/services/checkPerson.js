@@ -476,7 +476,9 @@ const candidateStatus = String(
 )
   .trim()
   .toLowerCase();
-
+const candidateElectionYear = normalized.electionDate
+  ? new Date(normalized.electionDate).getFullYear()
+  : null;
 const isCandidate =
   normalizedRole.includes("candidate");
 
@@ -495,12 +497,17 @@ const candidateRequiresSei =
     )
   );
 
-const requiresSei =
-  !isCandidate ||
-  isElectedOfficial ||
-  candidateRequiresSei;
-  if (requiresSei) {
-  for (const seiYear of seiYears) {
+for (const seiYear of seiYears) {
+  const requiresSeiForYear =
+    (!isCandidate || isElectedOfficial) ||
+    (
+      candidateRequiresSei &&
+      candidateElectionYear === seiYear
+    );
+
+  if (!requiresSeiForYear) {
+    continue;
+  }
   const seiMatch = matchesByYear.get(seiYear);
 
 if (!seiMatch) {
