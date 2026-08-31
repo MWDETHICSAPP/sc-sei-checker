@@ -1056,15 +1056,15 @@ if (
     );
   }
 
+ if (initialDueDate && isDueWithinFourYears(initialDueDate)) {
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
     filing: "Initial Report",
     electionYear,
-    dueDate: initialDueDate
-      ? initialDueDate.toISOString()
-      : null,
+    dueDate: initialDueDate.toISOString(),
     electionDate: input?.electionDate || null
   });
+}
 }
 
 if (electionYear && initialReportForElection?.reportId) {
@@ -1101,11 +1101,13 @@ if (electionYear && initialReportForElection?.reportId) {
     ? getGracePeriodDeadline(initialDueDate)
     : null;
 
-  if (
-    submittedDate &&
-    gracePeriodDeadline &&
-    submittedDate > gracePeriodDeadline
-  ) {
+if (
+  initialDueDate &&
+  isDueWithinFourYears(initialDueDate) &&
+  submittedDate &&
+  gracePeriodDeadline &&
+  submittedDate > gracePeriodDeadline
+) {
     campaignDeficiencies.push({
       type: "Campaign Disclosure",
       filing: "Initial Report",
