@@ -127,7 +127,7 @@ function getPreElectionDueDate(electionDate) {
 function getPreElectionStartDate(electionDate) {
   const election = parseElectionDate(electionDate);
 
-  !election) {
+  !(election) {
     return null;
   }
 
