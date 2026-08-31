@@ -7,6 +7,7 @@ const {
   checkCampaignCompliance
 } = require("./checkCampaignCompliance");
 const {
+  searchCandidates,
   getCandidateHistory
 } = require("./electionHistoryService");
 const POSITIONS_URL =
@@ -499,29 +500,29 @@ const candidateRequiresSei =
     )
   );
 
-  let firstWinningYearForOffice = null;
+let firstWinningYearForOffice = null;
 
 if (isElectedOfficial) {
   try {
-    console.log(
-  "CANDIDATE FILING MATCH FOR HISTORY:",
-  JSON.stringify(campaignCompliance?.candidateFilingMatch, null, 2)
-);
-    const candidateHistory = await getCandidateHistory(
-      campaignCompliance.candidateFilingMatch.candidateId
-    );
+    const candidateSearchResults = await searchCandidates(normalized.name);
 
-    console.log(
-      "SC VOTES CANDIDATE HISTORY:",
-      JSON.stringify(candidateHistory, null, 2)
-    );
+    const candidateId = candidateSearchResults?.[0]?.id;
+
+    if (candidateId) {
+      const candidateHistory = await getCandidateHistory(candidateId);
+
+      console.log(
+        "SC VOTES CANDIDATE HISTORY:",
+        JSON.stringify(candidateHistory, null, 2)
+      );
+    }
   } catch (error) {
     console.error(
       "SC VOTES CANDIDATE HISTORY ERROR:",
       error.message
     );
   }
-}
+} 
 
 for (const seiYear of seiYears) {
   const requiresSeiForYear =
