@@ -509,12 +509,37 @@ if (isElectedOfficial) {
     const candidateId = candidateSearchResults?.[0]?.id;
 
     if (candidateId) {
-      const candidateHistory = await getCandidateHistory(candidateId);
+     const candidateHistory = await getCandidateHistory(candidateId);
 
-      console.log(
-        "SC VOTES CANDIDATE HISTORY:",
-        JSON.stringify(candidateHistory, null, 2)
-      );
+console.log(
+  "SC VOTES CANDIDATE HISTORY:",
+  JSON.stringify(candidateHistory, null, 2)
+);
+
+const relevantOfficeYears = (candidateHistory?.contests || [])
+  .filter((contestEntry) => {
+    const historyDivision = String(
+      contestEntry?.contest?.division?.displayName || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const requestedOffice = String(normalized.office || "")
+      .trim()
+      .toLowerCase();
+
+    return (
+      historyDivision &&
+      requestedOffice &&
+      historyDivision === requestedOffice
+    );
+  })
+  .map((contestEntry) => Number(contestEntry.year))
+  .filter((contestYear) => Number.isInteger(contestYear));
+
+if (relevantOfficeYears.length > 0) {
+  firstWinningYearForOffice = Math.min(...relevantOfficeYears);
+}
     }
   } catch (error) {
     console.error(
@@ -526,11 +551,18 @@ if (isElectedOfficial) {
 
 for (const seiYear of seiYears) {
   const requiresSeiForYear =
-    (!isCandidate || isElectedOfficial) ||
+  (
+    isElectedOfficial &&
     (
-      candidateRequiresSei &&
-      candidateElectionYear === seiYear
-    );
+      firstWinningYearForOffice === null ||
+      seiYear >= firstWinningYearForOffice
+    )
+  ) ||
+  (
+    isCandidate &&
+    candidateRequiresSei &&
+    candidateElectionYear === seiYear
+  );
 
   if (!requiresSeiForYear) {
     continue;
