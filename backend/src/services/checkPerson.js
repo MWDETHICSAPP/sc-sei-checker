@@ -501,8 +501,12 @@ const candidateRequiresSei =
 
   let firstWinningYearForOffice = null;
 
-if (isElectedOfficial && campaignCompliance?.candidateFilingMatch?.candidateId) {
+if (isElectedOfficial) {
   try {
+    console.log(
+  "CANDIDATE FILING MATCH FOR HISTORY:",
+  JSON.stringify(campaignCompliance?.candidateFilingMatch, null, 2)
+);
     const candidateHistory = await getCandidateHistory(
       campaignCompliance.candidateFilingMatch.candidateId
     );
