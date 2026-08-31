@@ -15,7 +15,8 @@ const POSITIONS_URL =
 
 const REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Search/For/Sei/Reports";
-
+const SEI_VERSIONS_URL =
+  "https://ethicsfiling.sc.gov/api/Sei/Report/Get/All/Versions/By/Model";
 
 let positionsCache = null;
 let positionsCacheTime = 0;
@@ -33,7 +34,48 @@ function normalizeText(value) {
 function buildFilingUrl() {
   return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
 }
+async function getOriginalSeiSubmissionDate(seiMatch) {
+  if (!seiMatch?.reportId || !seiMatch?.seiFilerId) {
+    return null;
+  }
 
+  const response = await fetch(SEI_VERSIONS_URL, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Origin: "https://ethicsfiling.sc.gov",
+      Referer:
+        "https://ethicsfiling.sc.gov/public/statement-economic-interests",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
+    },
+    body: JSON.stringify({
+      candidateFilerId: seiMatch.candidateFilerId || null,
+      seiFilerId: seiMatch.seiFilerId,
+      seiReportId: seiMatch.reportId
+    })
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = await response.json();
+
+  const versions = Array.isArray(payload?.versions)
+    ? payload.versions
+    : [];
+
+  const originalVersion = versions.find(
+    (version) =>
+      String(version?.name || "")
+        .trim()
+        .toLowerCase() === "original"
+  );
+
+  return originalVersion?.fileDate || null;
+}
 async function getPositions() {
   const now = Date.now();
 
@@ -576,7 +618,12 @@ if (!seiMatch) {
   const graceDeadline = new Date(dueDate);
   graceDeadline.setDate(graceDeadline.getDate() + 5);
 
-  const filedDate = new Date(seiMatch.updated);
+const originalSubmittedDate =
+  await getOriginalSeiSubmissionDate(seiMatch);
+
+const filedDate = new Date(
+  originalSubmittedDate || seiMatch.updated
+);
 
   if (
     !Number.isNaN(filedDate.getTime()) &&
@@ -588,7 +635,7 @@ if (!seiMatch) {
       status: "Late",
       year: seiYear,
       dueDate: `${seiYear}-03-30T00:00:00.000Z`,
-      filedDate: seiMatch.updated
+      filedDate: originalSubmittedDate || seiMatch.updated
     });
   }
 } 
