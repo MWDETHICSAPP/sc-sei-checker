@@ -620,7 +620,7 @@ const candidateLabel = deficiency?.asCandidate ? " as a candidate" : "";
 } else {
   text = filing || `${filingYear} Statement of Economic Interests`;
 } 
-  }
+  
 
   return {
     ...deficiency,
