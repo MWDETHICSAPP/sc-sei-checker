@@ -608,6 +608,18 @@ for (const seiYear of seiYears) {
     candidateElectionYear === seiYear
   );
 
+  const asCandidate =
+  isCandidate &&
+  candidateRequiresSei &&
+  candidateElectionYear === seiYear &&
+  !(
+    isElectedOfficial &&
+    (
+      firstWinningYearForOffice === null ||
+      seiYear >= firstWinningYearForOffice
+    )
+  );
+
   if (!requiresSeiForYear) {
     continue;
   }
@@ -619,6 +631,7 @@ if (!seiMatch) {
     filing: `${seiYear} Statement of Economic Interests`,
     status: "Missing",
     year: seiYear,
+    asCandidate,
     dueDate: `${seiYear}-03-30T00:00:00.000Z`
   });
 } else {
@@ -654,6 +667,7 @@ const filedDate = new Date(
       filing: `${seiYear} Statement of Economic Interests`,
       status: "Late",
       year: seiYear,
+      asCandidate,
       dueDate: `${seiYear}-03-30T00:00:00.000Z`,
       filedDate: originalSubmittedDate || seiMatch.updated
     });
