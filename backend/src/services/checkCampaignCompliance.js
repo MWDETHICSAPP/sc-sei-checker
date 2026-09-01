@@ -296,18 +296,14 @@ async function getOriginalSubmissionDate(reportId) {
   const detail = await getCampaignReportDetail(reportId);
 
   if (!detail) return null;
-async function getOriginalSubmissionDate(reportId) {
-  const detail = await getCampaignReportDetail(reportId);
-
-  if (!detail) return null;
-
+a
   console.log(
     "CAMPAIGN REPORT VERSIONS:",
     JSON.stringify(detail?.versions, null, 2)
   );
 
   const versions = Array.isArray(detail?.versions) ? detail.versions : [];
-  const versions = Array.isArray(detail?.versions) ? detail.versions : [];
+
 
   const originalVersion = versions.find(
     (version) =>
