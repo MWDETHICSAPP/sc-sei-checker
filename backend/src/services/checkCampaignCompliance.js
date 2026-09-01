@@ -1170,33 +1170,24 @@ if (electionYear && !hasPreElectionReport) {
 }
 
 if (electionYear && hasPreElectionReport) {
-  const preElectionReportForElection = relevantReports.find((report) =>
+  const preElectionReportsForElection = relevantReports.filter((report) =>
     String(report?.reportName || "")
       .toLowerCase()
       .includes("pre-election")
   );
 
-  console.log(
-  "PRE-ELECTION TARGET:",
-  JSON.stringify(
-    preElectionReportForElection
-      ? {
-          reportId: preElectionReportForElection.reportId,
-          reportName: preElectionReportForElection.reportName,
-          electionDate: preElectionReportForElection.electionDate,
-          electionYear: preElectionReportForElection.electionYear,
-          electionType: preElectionReportForElection.electionType,
-          submittedDate: preElectionReportForElection.submittedDate
-        }
-      : null
-  )
-);
+  for (const preElectionReportForElection of preElectionReportsForElection) {
+    if (!preElectionReportForElection?.reportId) {
+      continue;
+    }
 
-  if (preElectionReportForElection?.reportId) {
     const preElectionElectionDate =
       preElectionReportForElection?.electionDate ||
-      input?.electionDate ||
       null;
+
+    if (!preElectionElectionDate) {
+      continue;
+    }
 
     const preElectionDueDate = getPreElectionDueDate(
       preElectionElectionDate
@@ -1210,16 +1201,6 @@ if (electionYear && hasPreElectionReport) {
       await getOriginalSubmissionDate(
         preElectionReportForElection.reportId
       );
-
-    console.log("PRE-ELECTION DATE RESULT:", {
-  selectedReportId: preElectionReportForElection.reportId,
-  selectedReportName: preElectionReportForElection.reportName,
-  originalSubmittedDate,
-  electionDate: preElectionElectionDate,
-  dueDate: preElectionDueDate
-    ? preElectionDueDate.toISOString()
-    : null
-});
 
     const submittedDate = originalSubmittedDate
       ? new Date(originalSubmittedDate)
@@ -1239,7 +1220,9 @@ if (electionYear && hasPreElectionReport) {
       campaignDeficiencies.push({
         type: "Campaign Disclosure",
         filing: "Pre-Election Report",
-        electionYear,
+        electionYear: new Date(
+          preElectionElectionDate
+        ).getFullYear(),
         startDate: preElectionStartDate
           ? preElectionStartDate.toISOString()
           : null,
