@@ -62,7 +62,11 @@ async function getOriginalSeiSubmissionDate(seiMatch) {
   }
 
   const payload = await response.json();
-
+console.log(
+  "SEI VERSIONS DEBUG:",
+  JSON.stringify(payload, null, 2)
+);
+  
   const versions = Array.isArray(payload?.versions)
     ? payload.versions
     : [];
