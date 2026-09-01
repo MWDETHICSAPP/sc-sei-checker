@@ -614,9 +614,9 @@ const filedDate = deficiency?.filedDate
 const candidateLabel = deficiency?.asCandidate ? " as a candidate" : "";
   
   if (status === "late" && filedDate) {
-    text = `${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, was filed late on ${filedDate}.`;
-  } else if (dueDate) {
-    text = `${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, has not been filed.`;
+  text = `The ${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, was filed late on ${filedDate}.`;  
+  } elsetext = `The ${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, was filed late on ${filedDate}.`; if (dueDate) {
+  text = `The ${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, has not been filed.`;  
   } else {
     text = filing || `${filingYear} Statement of Economic Interests`;
   }
