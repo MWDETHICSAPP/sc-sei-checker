@@ -1136,41 +1136,58 @@ if (
 }  
 
 if (electionYear && !hasPreElectionReport) {
-  const preElectionDueDate = getPreElectionDueDate(
-    input?.electionDate
+  const preElectionReportForElection = relevantReports.find((report) =>
+    String(report?.reportName || "")
+      .toLowerCase()
+      .includes("pre-election")
   );
+
+  const preElectionElectionDate =
+    preElectionReportForElection?.electionDate ||
+    input?.electionDate ||
+    null;
+
+  const preElectionDueDate = getPreElectionDueDate(
+    preElectionElectionDate
+  );
+
   const preElectionStartDate = getPreElectionStartDate(
-  input?.electionDate
-);
+    preElectionElectionDate
+  );
 
   campaignDeficiencies.push({
     type: "Campaign Disclosure",
     filing: "Pre-Election Report",
     electionYear,
     startDate: preElectionStartDate
-  ? preElectionStartDate.toISOString()
-  : null,
+      ? preElectionStartDate.toISOString()
+      : null,
     dueDate: preElectionDueDate
       ? preElectionDueDate.toISOString()
       : null,
-    electionDate: input?.electionDate || null
+    electionDate: preElectionElectionDate
   });
 }
 
-  if (electionYear && hasPreElectionReport) {
-  const preElectionReportForElection = electionRelatedReports.find((report) =>
+if (electionYear && hasPreElectionReport) {
+  const preElectionReportForElection = relevantReports.find((report) =>
     String(report?.reportName || "")
       .toLowerCase()
       .includes("pre-election")
   );
 
   if (preElectionReportForElection?.reportId) {
+    const preElectionElectionDate =
+      preElectionReportForElection?.electionDate ||
+      input?.electionDate ||
+      null;
+
     const preElectionDueDate = getPreElectionDueDate(
-      input?.electionDate
+      preElectionElectionDate
     );
 
     const preElectionStartDate = getPreElectionStartDate(
-      input?.electionDate
+      preElectionElectionDate
     );
 
     const originalSubmittedDate =
@@ -1202,7 +1219,7 @@ if (electionYear && !hasPreElectionReport) {
           : null,
         dueDate: preElectionDueDate.toISOString(),
         filedDate: originalSubmittedDate,
-        electionDate: input?.electionDate || null
+        electionDate: preElectionElectionDate
       });
     }
   }
