@@ -674,7 +674,9 @@ const filedDate = new Date(
       filing: `${seiYear} Statement of Economic Interests`,
       status: "Late",
       year: seiYear,
-      asCandidate,
+     asCandidate:
+  asCandidate ||
+  String(seiMatch.officeType || "").trim().toLowerCase() === "candidate",
       dueDate: `${seiYear}-03-30T00:00:00.000Z`,
       filedDate: originalSubmittedDate || seiMatch.updated
     });
