@@ -82,7 +82,7 @@ console.log(
         .toLowerCase() === "original"
   );
 
-  return originalVersion?.fileDate || null;
+  return originalVersion?.filedDate || null;
 }
 async function getPositions() {
   const now = Date.now();
