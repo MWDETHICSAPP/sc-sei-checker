@@ -1211,6 +1211,16 @@ if (electionYear && hasPreElectionReport) {
         preElectionReportForElection.reportId
       );
 
+    console.log("PRE-ELECTION DATE RESULT:", {
+  selectedReportId: preElectionReportForElection.reportId,
+  selectedReportName: preElectionReportForElection.reportName,
+  originalSubmittedDate,
+  electionDate: preElectionElectionDate,
+  dueDate: preElectionDueDate
+    ? preElectionDueDate.toISOString()
+    : null
+});
+
     const submittedDate = originalSubmittedDate
       ? new Date(originalSubmittedDate)
       : null;
