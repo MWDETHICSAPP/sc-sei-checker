@@ -57,9 +57,13 @@ async function getOriginalSeiSubmissionDate(seiMatch) {
     })
   });
 
-  if (!response.ok) {
-    return null;
-  }
+ if (!response.ok) {
+  console.log("SEI VERSIONS REQUEST FAILED:", {
+    status: response.status,
+    statusText: response.statusText
+  });
+  return null;
+} 
 
   const payload = await response.json();
 console.log(
