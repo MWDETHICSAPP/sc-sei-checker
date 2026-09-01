@@ -620,6 +620,15 @@ const scVotesCandidatesWithMatchingOffice = scVotesCandidates.filter(
       )
     )
 );
+
+console.log(
+  "SC VOTES MATCHING CONTESTS DEBUG:",
+  JSON.stringify(
+    scVotesCandidatesWithMatchingOffice.map(({ history }) => history?.contests),
+    null,
+    2
+  )
+);
   
 const scVotesElectionContests =
   scVotesCandidatesWithMatchingOffice
