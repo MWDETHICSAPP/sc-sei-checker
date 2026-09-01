@@ -526,6 +526,18 @@ const candidateStatus = String(
 const candidateElectionYear = normalized.electionDate
   ? new Date(normalized.electionDate).getFullYear()
   : null;
+
+  const historicalPartisanCandidateYears = new Set(
+  (campaignCompliance?.relevantReports || [])
+    .filter(
+      (report) =>
+        String(report?.electionType || "")
+          .trim()
+          .toLowerCase() === "primary"
+    )
+    .map((report) => Number(report?.electionYear))
+    .filter((reportYear) => Number.isInteger(reportYear))
+);
 const isCandidate =
   normalizedRole.includes("candidate");
 
@@ -608,18 +620,13 @@ for (const seiYear of seiYears) {
     candidateElectionYear === seiYear
   );
 
-  const asCandidate =
-  isCandidate &&
-  candidateRequiresSei &&
-  candidateElectionYear === seiYear &&
-  !(
-    isElectedOfficial &&
-    (
-      firstWinningYearForOffice === null ||
-      seiYear >= firstWinningYearForOffice
-    )
+ const asCandidate =
+  historicalPartisanCandidateYears.has(seiYear) &&
+  (
+    !isElectedOfficial ||
+    firstWinningYearForOffice === null ||
+    seiYear <= firstWinningYearForOffice
   );
-
   if (!requiresSeiForYear) {
     continue;
   }
