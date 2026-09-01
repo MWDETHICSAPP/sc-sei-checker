@@ -600,14 +600,13 @@ if (type === "SEI") {
       })
     : "";
 
-  const filedDate = deficiency?.filedDate
-    ? new Date(deficiency.filedDate).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "UTC"
-      })
-    : "";
+const filedDate = deficiency?.filedDate
+  ? new Date(deficiency.filedDate).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    })
+  : ""; 
 
   const status = String(deficiency?.status || "").trim().toLowerCase();
 
