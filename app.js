@@ -611,11 +611,12 @@ const filedDate = deficiency?.filedDate
   const status = String(deficiency?.status || "").trim().toLowerCase();
 
   let text;
-
+const candidateLabel = deficiency?.asCandidate ? " as a candidate" : "";
+  
   if (status === "late" && filedDate) {
-    text = `${filing || `${filingYear} Statement of Economic Interests`}, which was due on ${dueDate}, was filed late on ${filedDate}.`;
+    text = `${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, was filed late on ${filedDate}.`;
   } else if (dueDate) {
-    text = `${filing || `${filingYear} Statement of Economic Interests`}, which was due on ${dueDate}, has not been filed.`;
+    text = `${filing || `${filingYear} Statement of Economic Interests`}${candidateLabel}, which was due on ${dueDate}, has not been filed.`;
   } else {
     text = filing || `${filingYear} Statement of Economic Interests`;
   }
