@@ -1148,6 +1148,57 @@ if (electionYear && !hasPreElectionReport) {
   });
 }
 
+  if (electionYear && hasPreElectionReport) {
+  const preElectionReportForElection = electionRelatedReports.find((report) =>
+    String(report?.reportName || "")
+      .toLowerCase()
+      .includes("pre-election")
+  );
+
+  if (preElectionReportForElection?.reportId) {
+    const preElectionDueDate = getPreElectionDueDate(
+      input?.electionDate
+    );
+
+    const preElectionStartDate = getPreElectionStartDate(
+      input?.electionDate
+    );
+
+    const originalSubmittedDate =
+      await getOriginalSubmissionDate(
+        preElectionReportForElection.reportId
+      );
+
+    const submittedDate = originalSubmittedDate
+      ? new Date(originalSubmittedDate)
+      : null;
+
+    const gracePeriodDeadline = preElectionDueDate
+      ? getGracePeriodDeadline(preElectionDueDate)
+      : null;
+
+    if (
+      preElectionDueDate &&
+      isDueWithinFourYears(preElectionDueDate) &&
+      submittedDate &&
+      gracePeriodDeadline &&
+      submittedDate > gracePeriodDeadline
+    ) {
+      campaignDeficiencies.push({
+        type: "Campaign Disclosure",
+        filing: "Pre-Election Report",
+        electionYear,
+        startDate: preElectionStartDate
+          ? preElectionStartDate.toISOString()
+          : null,
+        dueDate: preElectionDueDate.toISOString(),
+        filedDate: originalSubmittedDate,
+        electionDate: input?.electionDate || null
+      });
+    }
+  }
+}
+
 for (const report of evaluatedQuarterlyReports) {
   if (report.timely === false) {
     campaignDeficiencies.push({
