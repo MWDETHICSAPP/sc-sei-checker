@@ -1176,6 +1176,22 @@ if (electionYear && hasPreElectionReport) {
       .includes("pre-election")
   );
 
+  console.log(
+  "PRE-ELECTION TARGET:",
+  JSON.stringify(
+    preElectionReportForElection
+      ? {
+          reportId: preElectionReportForElection.reportId,
+          reportName: preElectionReportForElection.reportName,
+          electionDate: preElectionReportForElection.electionDate,
+          electionYear: preElectionReportForElection.electionYear,
+          electionType: preElectionReportForElection.electionType,
+          submittedDate: preElectionReportForElection.submittedDate
+        }
+      : null
+  )
+);
+
   if (preElectionReportForElection?.reportId) {
     const preElectionElectionDate =
       preElectionReportForElection?.electionDate ||
