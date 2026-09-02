@@ -1177,11 +1177,14 @@ if (electionYear && hasPreElectionReport) {
   );
 
   for (const preElectionReportForElection of preElectionReportsForElection) {
-    console.log("PECD CANDIDATE:", {
-  reportId: preElectionReportForElection?.reportId,
-  reportName: preElectionReportForElection?.reportName,
-  electionDate: preElectionReportForElection?.electionDate
-});
+    console.log(
+  "PECD CANDIDATE:",
+  JSON.stringify({
+    reportId: preElectionReportForElection?.reportId,
+    reportName: preElectionReportForElection?.reportName,
+    electionDate: preElectionReportForElection?.electionDate
+  })
+);
     if (!preElectionReportForElection?.reportId) {
       continue;
     }
