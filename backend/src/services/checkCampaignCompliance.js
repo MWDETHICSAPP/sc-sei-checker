@@ -1131,7 +1131,19 @@ if (
   }
 }  
 
-
+console.log(
+  "BEFORE PECD LOOP:",
+  JSON.stringify({
+    electionYear,
+    hasPreElectionReport,
+    relevantReportsCount: relevantReports.length,
+    preElectionCount: relevantReports.filter((report) =>
+      String(report?.reportName || "")
+        .toLowerCase()
+        .includes("pre-election")
+    ).length
+  })
+);
 if (electionYear && hasPreElectionReport) {
   const preElectionReportsForElection = relevantReports.filter((report) =>
     String(report?.reportName || "")
