@@ -975,7 +975,88 @@ console.log(
     )
   })
 );
-  
+  const campaignDeficiencies = [];
+if (electionYear && hasPreElectionReport) {
+ const preElectionReportsForElection = electionRelatedReports.filter((report) =>
+    String(report?.reportName || "")
+      .toLowerCase()
+      .includes("pre-election")
+  );
+
+  for (const preElectionReportForElection of preElectionReportsForElection) {
+    console.log(
+  "PECD CANDIDATE:",
+  JSON.stringify({
+    reportId: preElectionReportForElection?.reportId,
+    reportName: preElectionReportForElection?.reportName,
+    electionDate: preElectionReportForElection?.electionDate
+  })
+);
+    if (!preElectionReportForElection?.reportId) {
+      continue;
+    }
+
+    const preElectionElectionDate =
+      preElectionReportForElection?.electionDate ||
+      null;
+
+    if (!preElectionElectionDate) {
+      continue;
+    }
+
+    const preElectionDueDate = getPreElectionDueDate(
+      preElectionElectionDate
+    );
+
+    const preElectionStartDate = getPreElectionStartDate(
+      preElectionElectionDate
+    );
+
+    const originalSubmittedDate =
+      await getOriginalSubmissionDate(
+        preElectionReportForElection.reportId
+      );
+
+   console.log("PECD LOOP RESULT:", {
+  reportId: preElectionReportForElection.reportId,
+  reportName: preElectionReportForElection.reportName,
+  electionDate: preElectionElectionDate,
+  originalSubmittedDate,
+  dueDate: preElectionDueDate
+    ? preElectionDueDate.toISOString()
+    : null
+});
+    const submittedDate = originalSubmittedDate
+      ? new Date(originalSubmittedDate)
+      : null;
+
+    const gracePeriodDeadline = preElectionDueDate
+      ? getGracePeriodDeadline(preElectionDueDate)
+      : null;
+
+    if (
+      preElectionDueDate &&
+      isDueWithinFourYears(preElectionDueDate) &&
+      submittedDate &&
+      gracePeriodDeadline &&
+      submittedDate > gracePeriodDeadline
+    ) {
+      campaignDeficiencies.push({
+        type: "Campaign Disclosure",
+        filing: "Pre-Election Report",
+        electionYear: new Date(
+          preElectionElectionDate
+        ).getFullYear(),
+        startDate: preElectionStartDate
+          ? preElectionStartDate.toISOString()
+          : null,
+        dueDate: preElectionDueDate.toISOString(),
+        filedDate: originalSubmittedDate,
+        electionDate: preElectionElectionDate
+      });
+    }
+  }
+}
   const reportsWithinFourYears = relevantReports.filter((report) => {
   const dueDate = getQuarterlyDueDate(report?.reportName);
 
@@ -1019,7 +1100,7 @@ timely:
   enforcementCutoffReached = true;
 }
 }
-console.log("AFTER QUARTERLY LOOP");
+
   
   const hasPriorCampaignReporting = relevantReports.some((report) => {
   if (!electionDate || Number.isNaN(electionDate.getTime())) return false;
@@ -1045,8 +1126,7 @@ const filingFeeFinancialActivity =
 const filingFeeMeetsInitialThreshold =
   filingFeeFinancialActivity >= 500;
   
- const campaignDeficiencies = [];
-
+ 
 if (
   electionYear &&
   filingFeeMeetsInitialThreshold &&
@@ -1131,101 +1211,8 @@ if (
     });
   }
 }  
-console.log("AFTER INITIAL BLOCK");
-console.log(
-  "BEFORE PECD LOOP:",
-  JSON.stringify({
-    electionYear,
-    hasPreElectionReport,
-    relevantReportsCount: relevantReports.length,
-    preElectionCount: relevantReports.filter((report) =>
-      String(report?.reportName || "")
-        .toLowerCase()
-        .includes("pre-election")
-    ).length
-  })
-);
-if (electionYear && hasPreElectionReport) {
-  const preElectionReportsForElection = relevantReports.filter((report) =>
-    String(report?.reportName || "")
-      .toLowerCase()
-      .includes("pre-election")
-  );
 
-  for (const preElectionReportForElection of preElectionReportsForElection) {
-    console.log(
-  "PECD CANDIDATE:",
-  JSON.stringify({
-    reportId: preElectionReportForElection?.reportId,
-    reportName: preElectionReportForElection?.reportName,
-    electionDate: preElectionReportForElection?.electionDate
-  })
-);
-    if (!preElectionReportForElection?.reportId) {
-      continue;
-    }
 
-    const preElectionElectionDate =
-      preElectionReportForElection?.electionDate ||
-      null;
-
-    if (!preElectionElectionDate) {
-      continue;
-    }
-
-    const preElectionDueDate = getPreElectionDueDate(
-      preElectionElectionDate
-    );
-
-    const preElectionStartDate = getPreElectionStartDate(
-      preElectionElectionDate
-    );
-
-    const originalSubmittedDate =
-      await getOriginalSubmissionDate(
-        preElectionReportForElection.reportId
-      );
-
-   console.log("PECD LOOP RESULT:", {
-  reportId: preElectionReportForElection.reportId,
-  reportName: preElectionReportForElection.reportName,
-  electionDate: preElectionElectionDate,
-  originalSubmittedDate,
-  dueDate: preElectionDueDate
-    ? preElectionDueDate.toISOString()
-    : null
-});
-    const submittedDate = originalSubmittedDate
-      ? new Date(originalSubmittedDate)
-      : null;
-
-    const gracePeriodDeadline = preElectionDueDate
-      ? getGracePeriodDeadline(preElectionDueDate)
-      : null;
-
-    if (
-      preElectionDueDate &&
-      isDueWithinFourYears(preElectionDueDate) &&
-      submittedDate &&
-      gracePeriodDeadline &&
-      submittedDate > gracePeriodDeadline
-    ) {
-      campaignDeficiencies.push({
-        type: "Campaign Disclosure",
-        filing: "Pre-Election Report",
-        electionYear: new Date(
-          preElectionElectionDate
-        ).getFullYear(),
-        startDate: preElectionStartDate
-          ? preElectionStartDate.toISOString()
-          : null,
-        dueDate: preElectionDueDate.toISOString(),
-        filedDate: originalSubmittedDate,
-        electionDate: preElectionElectionDate
-      });
-    }
-  }
-}
 
 for (const report of evaluatedQuarterlyReports) {
   if (report.timely === false) {
