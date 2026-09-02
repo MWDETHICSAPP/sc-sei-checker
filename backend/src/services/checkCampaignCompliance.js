@@ -960,24 +960,20 @@ const hasPreElectionReport = electionRelatedReports.some((report) =>
     .includes("pre-election")
 );
 
-  console.log(
+console.log(
   "LOTT REPORT FLAGS:",
-  JSON.stringify(
-    {
-      candidate,
-      electionYear,
-      hasInitialReport,
-      hasPreElectionReport,
-      relevantReportNames: relevantReports.map(
-        (report) => report?.reportName
-      ),
-      electionRelatedReportNames: electionRelatedReports.map(
-        (report) => report?.reportName
-      )
-    },
-    null,
-    2
-  )
+  JSON.stringify({
+    candidate,
+    electionYear,
+    hasInitialReport,
+    hasPreElectionReport,
+    relevantReportNames: relevantReports.map(
+      (report) => report?.reportName
+    ),
+    electionRelatedReportNames: electionRelatedReports.map(
+      (report) => report?.reportName
+    )
+  })
 );
   
   const reportsWithinFourYears = relevantReports.filter((report) => {
