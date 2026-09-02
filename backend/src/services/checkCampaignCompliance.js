@@ -1131,39 +1131,6 @@ if (
   }
 }  
 
-if (electionYear && !hasPreElectionReport) {
-  const preElectionReportForElection = relevantReports.find((report) =>
-    String(report?.reportName || "")
-      .toLowerCase()
-      .includes("pre-election")
-  );
-
-  const preElectionElectionDate =
-    preElectionReportForElection?.electionDate ||
-    input?.electionDate ||
-    null;
-
-  const preElectionDueDate = getPreElectionDueDate(
-    preElectionElectionDate
-  );
-
-  const preElectionStartDate = getPreElectionStartDate(
-    preElectionElectionDate
-  );
-
-  campaignDeficiencies.push({
-    type: "Campaign Disclosure",
-    filing: "Pre-Election Report",
-    electionYear,
-    startDate: preElectionStartDate
-      ? preElectionStartDate.toISOString()
-      : null,
-    dueDate: preElectionDueDate
-      ? preElectionDueDate.toISOString()
-      : null,
-    electionDate: preElectionElectionDate
-  });
-}
 
 if (electionYear && hasPreElectionReport) {
   const preElectionReportsForElection = relevantReports.filter((report) =>
