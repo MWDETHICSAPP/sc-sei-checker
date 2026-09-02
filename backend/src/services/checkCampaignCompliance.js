@@ -1019,7 +1019,8 @@ timely:
   enforcementCutoffReached = true;
 }
 }
-
+console.log("AFTER QUARTERLY LOOP");
+  
   const hasPriorCampaignReporting = relevantReports.some((report) => {
   if (!electionDate || Number.isNaN(electionDate.getTime())) return false;
 
@@ -1130,7 +1131,7 @@ if (
     });
   }
 }  
-
+console.log("AFTER INITIAL BLOCK");
 console.log(
   "BEFORE PECD LOOP:",
   JSON.stringify({
