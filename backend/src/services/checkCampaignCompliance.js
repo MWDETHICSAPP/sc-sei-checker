@@ -1024,15 +1024,19 @@ if (!preElectionElectionDate) {
         preElectionReportForElection.reportId
       );
 
-   console.log("PECD LOOP RESULT:", {
-  reportId: preElectionReportForElection.reportId,
-  reportName: preElectionReportForElection.reportName,
-  electionDate: preElectionElectionDate,
-  originalSubmittedDate,
-  dueDate: preElectionDueDate
-    ? preElectionDueDate.toISOString()
-    : null
-});
+   console.log(
+  "PECD LOOP RESULT:",
+  JSON.stringify({
+    reportId: preElectionReportForElection.reportId,
+    reportName: preElectionReportForElection.reportName,
+    electionDate: preElectionElectionDate,
+    originalSubmittedDate,
+    dueDate: preElectionDueDate
+      ? preElectionDueDate.toISOString()
+      : null
+  })
+);
+    
     const submittedDate = originalSubmittedDate
       ? new Date(originalSubmittedDate)
       : null;
