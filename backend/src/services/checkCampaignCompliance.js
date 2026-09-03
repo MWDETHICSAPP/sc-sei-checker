@@ -471,38 +471,50 @@ console.log(
   JSON.stringify(buildCampaignSearchBody(requestedSearchOffice), null, 2)
 );
 
-// First try the normal, office-filtered search.
-let reportList = await searchCampaignReports(requestedSearchOffice);
-
-if (uploadedElectionYear && uploadedElectionYear !== reportingYear) {
-  const currentCycleReports = await searchCampaignReports(
+const searchCampaignYear = async (electionYear) => {
+  let reports = await searchCampaignReports(
     requestedSearchOffice,
-    reportingYear
+    electionYear
   );
 
-  reportList = [
-    ...new Map(
-      [...reportList, ...currentCycleReports].map((report) => [
-        report?.reportId ||
-          String(report?.candidateFilerId) + ":" +
-          String(report?.campaignId) + ":" +
-          String(report?.reportName),
-        report
-      ])
-    ).values()
-  ];
+  // The public API often stores a generic office name (for example,
+  // "Richland County Council") while the spreadsheet contains a district.
+  // Apply the surname-only fallback independently for every searched year.
+  if (requestedSearchOffice && reports.length === 0) {
+    console.log(
+      "CAMPAIGN REPORT FALLBACK SEARCH:",
+      JSON.stringify(buildCampaignSearchBody("", electionYear), null, 2)
+    );
+
+    reports = await searchCampaignReports("", electionYear);
+  }
+
+  return reports;
+};
+
+const electionYearsToSearch = [
+  uploadedElectionYear || reportingYear,
+  ...(uploadedElectionYear && uploadedElectionYear !== reportingYear
+    ? [reportingYear]
+    : [])
+];
+
+const reportLists = [];
+for (const electionYear of electionYearsToSearch) {
+  reportLists.push(await searchCampaignYear(electionYear));
 }
 
-// If an office was supplied but that search returned nothing,
-// retry by surname/election year without the office filter.
-if (requestedSearchOffice && reportList.length === 0) {
-  console.log(
-    "CAMPAIGN REPORT FALLBACK SEARCH:",
-    JSON.stringify(buildCampaignSearchBody(""), null, 2)
-  );
-
-  reportList = await searchCampaignReports("");
-}
+const reportList = [
+  ...new Map(
+    reportLists.flat().map((report) => [
+      report?.reportId ||
+        String(report?.candidateFilerId) + ":" +
+        String(report?.campaignId) + ":" +
+        String(report?.reportName),
+      report
+    ])
+  ).values()
+];
   
 console.log(
   "RAW REPORT SUMMARY:",
