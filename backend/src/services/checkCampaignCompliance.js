@@ -834,6 +834,31 @@ const relevantReports = reportList.filter((report) => {
   const campaignMatches =
     relevantCampaignIds.has(report?.campaignId);
 
+  const reportNameParts = String(report?.candidateName || "")
+    .toLowerCase()
+    .replace(/[.,]/g, " ")
+    .split(/\s+/)
+    .filter(
+      (part) =>
+        part &&
+        !["jr", "sr", "ii", "iii", "iv", "v"].includes(part) &&
+        part.length > 1
+    );
+
+  const candidateMatches =
+    candidateNameParts.length > 0 &&
+    candidateNameParts.every((part) =>
+      reportNameParts.includes(part)
+    );
+
+  const officeMatches =
+    !requestedOffice ||
+    officeNamesMatch(report?.office, requestedOffice);
+
+  // A verified same-name, same-office report can belong to a
+  // newer filer account for the same person.
+  if (candidateMatches && officeMatches) return true;
+
   // A matching campaign ID is sufficient because the campaign
   // was already tied to the relevant office run above.
   if (campaignMatches) return true;
@@ -841,12 +866,7 @@ const relevantReports = reportList.filter((report) => {
   // Fall back to filer ID when campaign ID is unavailable.
   if (!filerMatches) return false;
 
-  if (!requestedOffice) return true;
-
-  return officeNamesMatch(
-    report?.office,
-    requestedOffice
-  );
+  return officeMatches;
 });
 
   console.log(
