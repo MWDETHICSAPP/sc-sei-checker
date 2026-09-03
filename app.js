@@ -669,9 +669,20 @@ const startDate = deficiency?.startDate
     text = `A ${year} Initial Campaign Disclosure, which was due no later than ${dueDate}, has not been filed.`;
   }
 
- if (filing.includes('Pre-Election') && startDate && dueDate) {
-  text = `A ${year} Pre-Election Campaign Disclosure, which was required to be filed between ${startDate} and ${dueDate}, has not been filed.`;
-}
+if (filing.includes('Pre-Election') && startDate && dueDate) {
+  const filedDate = deficiency?.filedDate
+    ? new Date(deficiency.filedDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC'
+      })
+    : '';
+
+  text = filedDate
+    ? `A ${year} Pre-Election Campaign Disclosure, which was required to be filed between ${startDate} and ${dueDate}, was filed late on ${filedDate}.`
+    : `A ${year} Pre-Election Campaign Disclosure, which was required to be filed between ${startDate} and ${dueDate}, has not been filed.`;
+} 
 
   return {
     ...deficiency,
