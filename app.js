@@ -273,8 +273,19 @@ const people = validRows.map((row) => ({
   : [];
 console.log("DEFICIENCIES FOR", row.__name, row.__deficiencies);
       
+const campaignAddress =
+  result.campaignCompliance?.campaignProfile?.address || null;
+
 const candidateContactAddress =
-  result.campaignCompliance?.candidateFilingExportRow?.["Contact Address"] || '';
+  [
+    campaignAddress?.addressLine1,
+    campaignAddress?.addressLine2,
+    campaignAddress?.city,
+    campaignAddress?.state,
+    campaignAddress?.zipCode
+  ]
+    .filter(Boolean)
+    .join(', ');
 
 row.__candidateAddress =
   normalizeWhitespace(candidateContactAddress);
