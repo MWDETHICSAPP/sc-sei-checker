@@ -34,9 +34,19 @@ function officeNamesMatch(a, b) {
 
   // The filing system sometimes stores a district office under its
   // districtless parent name (for example, "Richland County Council").
+  const leftBase = left.replace(districtSuffix, "");
+  const rightBase = right.replace(districtSuffix, "");
+
+  if (leftBase === rightBase) return true;
+
+  // Countywide offices are also inconsistent about the word "County"
+  // (for example, "Richland County Coroner" vs. "Richland Coroner").
+  const removeCountyQualifier = (value) =>
+    value.replace(/\bcounty\b/g, "").replace(/\s+/g, " ").trim();
+
   return (
-    left.replace(districtSuffix, "") ===
-    right.replace(districtSuffix, "")
+    removeCountyQualifier(leftBase) ===
+    removeCountyQualifier(rightBase)
   );
 }
 
