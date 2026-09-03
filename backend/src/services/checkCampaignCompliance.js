@@ -721,28 +721,17 @@ console.log(
   )
 );
   
+const matchingOfficeRuns = requestedOffice
+  ? allOfficeRuns.filter((office) =>
+      officeNamesMatch(office?.name, requestedOffice)
+    )
+  : [];
+
 const relevantOfficeRuns =
-  input?.electionDate && requestedOffice
-    ? findMatchingCampaignRuns(
-        allOfficeRuns,
-        requestedOffice,
-        input.electionDate
-      )
+  matchingOfficeRuns.length > 0
+    ? matchingOfficeRuns
     : scVotesMatchedRuns.length > 0
     ? scVotesMatchedRuns
-    : requestedOffice
-    ? allOfficeRuns.filter((office) => {
-        const officeMatches =
-          String(office?.name || "")
-            .trim()
-            .toLowerCase() === requestedOffice;
-
-        if (!officeMatches) return false;
-
-        if (office?.isClosed) return true;
-
-        return isDueWithinFourYears(office?.end);
-      })
     : allOfficeRuns.filter((office) => {
         if (office?.isClosed) return true;
 
