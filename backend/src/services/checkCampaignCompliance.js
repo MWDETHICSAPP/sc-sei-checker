@@ -996,12 +996,19 @@ if (electionYear && hasPreElectionReport) {
       continue;
     }
 
-    const preElectionElectionDate =
-      preElectionReportForElection?.electionDate ||
-      null;
+const preElectionDetail =
+  await getCampaignReportDetail(
+    preElectionReportForElection.reportId
+  );
 
-    if (!preElectionElectionDate) {
-      continue;
+const preElectionElectionDate =
+  preElectionReportForElection?.electionDate ||
+  preElectionDetail?.electionDate ||
+  null;
+
+if (!preElectionElectionDate) {
+  continue;
+}
     }
 
     const preElectionDueDate = getPreElectionDueDate(
