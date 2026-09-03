@@ -87,7 +87,9 @@ function parseElectionDate(electionDate) {
   const value = String(electionDate).trim();
 
   // ISO format: YYYY-MM-DD
-  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const isoMatch = value.match(
+  /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/
+);
 
   if (isoMatch) {
     const [, year, month, day] = isoMatch;
