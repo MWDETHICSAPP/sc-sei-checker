@@ -432,24 +432,26 @@ const candidate = String(
     };
   }
 
-const buildCampaignSearchBody = (office) => ({
+const uploadedElectionYear = input?.electionDate
+  ? new Date(input.electionDate).getFullYear()
+  : null;
+
+const buildCampaignSearchBody = (office, electionYear = null) => ({
   candidate,
   office,
-  electionYear: input?.electionDate
-    ? new Date(input.electionDate).getFullYear()
-    : reportingYear,
+  electionYear: electionYear || uploadedElectionYear || reportingYear,
   reportType: input?.reportType || "Any",
   electionType: input?.electionType || "Any",
 });
 
-const searchCampaignReports = async (office) => {
+const searchCampaignReports = async (office, electionYear = null) => {
   const response = await fetch(CAMPAIGN_REPORTS_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(buildCampaignSearchBody(office)),
+    body: JSON.stringify(buildCampaignSearchBody(office, electionYear)),
   });
 
   if (!response.ok) {
@@ -471,6 +473,25 @@ console.log(
 
 // First try the normal, office-filtered search.
 let reportList = await searchCampaignReports(requestedSearchOffice);
+
+if (uploadedElectionYear && uploadedElectionYear !== reportingYear) {
+  const currentCycleReports = await searchCampaignReports(
+    requestedSearchOffice,
+    reportingYear
+  );
+
+  reportList = [
+    ...new Map(
+      [...reportList, ...currentCycleReports].map((report) => [
+        report?.reportId ||
+          String(report?.candidateFilerId) + ":" +
+          String(report?.campaignId) + ":" +
+          String(report?.reportName),
+        report
+      ])
+    ).values()
+  ];
+}
 
 // If an office was supplied but that search returned nothing,
 // retry by surname/election year without the office filter.
