@@ -518,11 +518,8 @@ if (requestedOffice) {
         return false;
       }
 
-      const reportOffice = String(report?.office || "")
-        .trim()
-        .toLowerCase();
-
-      return reportOffice === requestedOffice;
+  return officeNamesMatch(report?.office, requestedOffice);
+      
     }) || null;
 } else {
   profileSeedReport =
