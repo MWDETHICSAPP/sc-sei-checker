@@ -833,10 +833,9 @@ const relevantReports = reportList.filter((report) => {
 
   if (!requestedOffice) return true;
 
-  return (
-    String(report?.office || "")
-      .trim()
-      .toLowerCase() === requestedOffice
+  return officeNamesMatch(
+    report?.office,
+    requestedOffice
   );
 });
 
