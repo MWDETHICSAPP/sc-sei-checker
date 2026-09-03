@@ -1,7 +1,9 @@
 function normalizeOfficeName(value) {
   return String(value || "")
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s+for\s+[a-z.' -]+county$/i, "")
+    .replace(/\s+/g, " ");
 }
 
 function normalizeDate(value) {
@@ -56,5 +58,6 @@ function findMatchingCampaignRuns(runs, officeName, electionDate) {
 }
 
 module.exports = {
-  findMatchingCampaignRuns
+  findMatchingCampaignRuns,
+  officeNamesMatch
 };
