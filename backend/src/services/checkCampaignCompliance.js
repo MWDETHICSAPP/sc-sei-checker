@@ -10,7 +10,10 @@
  *
  * It is not connected to the live application yet.
  */
-const { findMatchingCampaignRuns } = require("./campaignRunMatcher");
+const {
+  findMatchingCampaignRuns,
+  officeNamesMatch
+} = require("./campaignRunMatcher");
 
 const {
   searchCandidateFilings,
