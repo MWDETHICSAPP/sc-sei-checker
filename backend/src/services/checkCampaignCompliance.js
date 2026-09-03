@@ -824,7 +824,12 @@ const relevantReports = reportList.filter((report) => {
   const campaignMatches =
     relevantCampaignIds.has(report?.campaignId);
 
- if (!filerMatches) return false;
+  // A matching campaign ID is sufficient because the campaign
+  // was already tied to the relevant office run above.
+  if (campaignMatches) return true;
+
+  // Fall back to filer ID when campaign ID is unavailable.
+  if (!filerMatches) return false;
 
   if (!requestedOffice) return true;
 
