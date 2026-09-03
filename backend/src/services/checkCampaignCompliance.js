@@ -1009,7 +1009,7 @@ const preElectionElectionDate =
 if (!preElectionElectionDate) {
   continue;
 }
-    }
+    
 
     const preElectionDueDate = getPreElectionDueDate(
       preElectionElectionDate
