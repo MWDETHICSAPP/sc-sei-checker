@@ -554,10 +554,10 @@ if (profileSeedReport) {
     profileSeedReport.seiFilerId
   );
 }
-  console.log(
+console.log(
   "CAMPAIGN PROFILE:",
-  JSON.stringify(campaignProfile, null, 2)
-);
+  JSON.stringify(campaignProfile)
+); 
   
    
   
