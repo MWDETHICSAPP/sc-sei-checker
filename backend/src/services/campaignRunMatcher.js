@@ -23,8 +23,21 @@ function officeNamesMatch(a, b) {
   const right = normalizeOfficeName(b);
 
   if (!left || !right) return false;
+  if (left === right) return true;
 
-  return left === right;
+  const districtSuffix = /\s+district\s+\d+$/i;
+  const leftHasDistrict = districtSuffix.test(left);
+  const rightHasDistrict = districtSuffix.test(right);
+
+  // Never treat two different numbered districts as the same office.
+  if (leftHasDistrict && rightHasDistrict) return false;
+
+  // The filing system sometimes stores a district office under its
+  // districtless parent name (for example, "Richland County Council").
+  return (
+    left.replace(districtSuffix, "") ===
+    right.replace(districtSuffix, "")
+  );
 }
 
 function campaignRunContainsElectionDate(run, electionDate) {
