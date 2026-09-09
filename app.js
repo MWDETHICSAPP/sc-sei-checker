@@ -140,7 +140,13 @@ $('prepareBtn').addEventListener('click', async () => {
   );
 
   const officeKey = Object.keys(sourceRows[0] || {}).find(
-    key => normalizeWhitespace(key).toLowerCase() === 'office'
+    key => [
+      'office',
+      'position',
+      'title',
+      'office / position',
+      'office/position'
+    ].includes(normalizeWhitespace(key).toLowerCase())
   );
 
   const year = Number($('yearInput').value) || 2026;
