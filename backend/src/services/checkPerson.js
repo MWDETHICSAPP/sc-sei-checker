@@ -214,6 +214,23 @@ function findPositionInfo(positions, jurisdiction) {
   }
 
   for (const wanted of variants) {
+    if (!wanted.includes("school")) {
+      continue;
+    }
+
+    const schoolDistrictOffice = positions.find(
+      (position) =>
+        position.type === "Office" &&
+        normalizeText(position.name) ===
+          `${wanted} school district`
+    );
+
+    if (schoolDistrictOffice) {
+      return schoolDistrictOffice;
+    }
+  }
+
+  for (const wanted of variants) {
     const exactGovernmentEntity = positions.find(
       (position) =>
         position.type === "Government Entity" &&
@@ -286,9 +303,20 @@ const searchTargets = isSolicitor
   ? jurisdictions.map((value) => `${value} County`)
   : jurisdictions;
 
-  const yearsToSearch = Array.isArray(years)
+const yearsToSearch = Array.isArray(years)
   ? years
   : [years];
+
+const surnameSearches = [
+  ...new Set(
+    [
+      surname,
+      ...String(surname || "").split(/[-\s]+/)
+    ]
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean)
+  )
+];
 
 for (const reportYear of yearsToSearch) {
 
@@ -302,6 +330,7 @@ for (let i = 0; i < searchTargets.length; i += 1) {
     continue;
   }
 
+for (const surnameSearch of surnameSearches) {
   const response = await fetch(REPORTS_URL, {
     method: "POST",
     headers: {
@@ -315,7 +344,7 @@ for (let i = 0; i < searchTargets.length; i += 1) {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
     },
     body: JSON.stringify({
-      filerName: surname.toLowerCase(),
+      filerName: surnameSearch,
       positionSearch: jurisdictionPositionInfo.name,
       positionInfo: {
         id: jurisdictionPositionInfo.id,
@@ -350,6 +379,7 @@ if (Array.isArray(payload.result)) {
 
 
   allMatches.push(...payload.result);
+}
 }
 }
 }
@@ -650,6 +680,10 @@ console.log(
 
 const relevantOfficeYears = (candidateHistory?.contests || [])
   .filter((contestEntry) => {
+    if (contestEntry?.isWinner !== true) {
+      return false;
+    }
+
     const historyDivision = String(
       contestEntry?.contest?.division?.displayName || ""
     )
@@ -660,10 +694,26 @@ const relevantOfficeYears = (candidateHistory?.contests || [])
       .trim()
       .toLowerCase();
 
+    const historyJurisdiction = historyDivision.replace(
+      /\bschool district\b/g,
+      "school"
+    );
+
+    const requestedJurisdiction = String(
+      normalized.jurisdiction || ""
+    )
+      .trim()
+      .toLowerCase()
+      .replace(/\bschool district\b/g, "school");
+
     return (
       historyDivision &&
-      requestedOffice &&
-      historyDivision === requestedOffice
+      (
+        (requestedOffice && historyDivision === requestedOffice) ||
+        (!requestedOffice &&
+          requestedJurisdiction &&
+          historyJurisdiction === requestedJurisdiction)
+      )
     );
   })
   .map((contestEntry) => Number(contestEntry.year))
@@ -741,9 +791,15 @@ const filedDate = new Date(
   originalSubmittedDate || seiMatch.updated
 );
 
+const isNonpartisanWinningYear =
+  isElectedOfficial &&
+  normalizeText(normalized.jurisdiction).includes("school") &&
+  firstWinningYearForOffice === seiYear;
+
   if (
     !Number.isNaN(filedDate.getTime()) &&
-    filedDate > graceDeadline
+    filedDate > graceDeadline &&
+    !isNonpartisanWinningYear
   ) {
     seiDeficiencies.push({
       type: "SEI",
