@@ -17,6 +17,8 @@ const REPORTS_URL =
   "https://ethicsfiling.sc.gov/api/Ethics/Get/Public/Search/For/Sei/Reports";
 const SEI_VERSIONS_URL =
   "https://ethicsfiling.sc.gov/api/Sei/Report/Get/All/Versions/By/Model";
+const FILED_SEI_OVERVIEW_URL =
+  "https://ethicsfiling.sc.gov/api/Sei/Report/Get/Filed/Overview";
 
 let positionsCache = null;
 let positionsCacheTime = 0;
@@ -83,6 +85,41 @@ console.log(
   );
 
   return originalVersion?.filedDate || null;
+}
+
+async function getFiledSeiOverview(seiFilerId) {
+  if (!seiFilerId) {
+    return [];
+  }
+
+  const response = await fetch(
+    `${FILED_SEI_OVERVIEW_URL}/${seiFilerId}`,
+    {
+      headers: {
+        Accept: "application/json",
+        Origin: "https://ethicsfiling.sc.gov",
+        Referer:
+          "https://ethicsfiling.sc.gov/public/statement-economic-interests",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36"
+      }
+    }
+  );
+
+  if (!response.ok) {
+    console.log("FILED SEI OVERVIEW REQUEST FAILED:", {
+      seiFilerId,
+      status: response.status,
+      statusText: response.statusText
+    });
+    return [];
+  }
+
+  const payload = await response.json();
+
+  return Array.isArray(payload?.gridRows)
+    ? payload.gridRows
+    : [];
 }
 async function getPositions() {
   const now = Date.now();
@@ -316,6 +353,45 @@ if (Array.isArray(payload.result)) {
 }
 }
 }
+
+const matchesByFilerId = new Map();
+
+for (const match of allMatches) {
+  if (match?.seiFilerId && !matchesByFilerId.has(match.seiFilerId)) {
+    matchesByFilerId.set(match.seiFilerId, match);
+  }
+}
+
+for (const [seiFilerId, seedMatch] of matchesByFilerId) {
+  try {
+    const filedReports = await getFiledSeiOverview(seiFilerId);
+
+    for (const filedReport of filedReports) {
+      const filingYear = Number(filedReport?.filingYear);
+
+      if (!yearsToSearch.includes(filingYear)) {
+        continue;
+      }
+
+      allMatches.push({
+        ...seedMatch,
+        report: `${filingYear} SEI Report`,
+        reportId: filedReport.reportId,
+        reportYear: filingYear - 1,
+        updated:
+          filedReport.submitted ||
+          filedReport.submittedString ||
+          seedMatch.updated
+      });
+    }
+  } catch (error) {
+    console.log("FILED SEI OVERVIEW ERROR:", {
+      seiFilerId,
+      message: error.message
+    });
+  }
+}
+
 const uniqueMatches = [
   ...new Map(
     allMatches.map((match) => {
