@@ -33,6 +33,14 @@ function normalizeText(value) {
     .replace(/\s+/g, " ");
 }
 
+function normalizeSchoolJurisdiction(value) {
+  return normalizeText(value)
+    .replace(/\bschool district\b/g, "school")
+    .replace(/\bcounty\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildFilingUrl() {
   return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
 }
@@ -690,10 +698,6 @@ const relevantOfficeYears = (candidateHistory?.contests || [])
       .trim()
       .toLowerCase();
 
-    const requestedOffice = String(normalized.office || "")
-      .trim()
-      .toLowerCase();
-
     const historyJurisdiction = historyDivision.replace(
       /\bschool district\b/g,
       "school"
@@ -705,6 +709,17 @@ const relevantOfficeYears = (candidateHistory?.contests || [])
       .trim()
       .toLowerCase()
       .replace(/\bschool district\b/g, "school");
+
+    if (requestedJurisdiction.includes("school")) {
+      return (
+        normalizeSchoolJurisdiction(historyDivision) ===
+        normalizeSchoolJurisdiction(requestedJurisdiction)
+      );
+    }
+
+    const requestedOffice = String(normalized.office || "")
+      .trim()
+      .toLowerCase();
 
     return (
       historyDivision &&
