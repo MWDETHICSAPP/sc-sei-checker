@@ -86,6 +86,21 @@ function normalizeHeader(value) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
+function inferOffice(row, officeKey, jurisdictionKey, roleKey) {
+  const explicitOffice = officeKey ? normalizeWhitespace(row[officeKey]) : '';
+  if (explicitOffice) return explicitOffice;
+
+  const jurisdiction = normalizeWhitespace(row[jurisdictionKey]).toLowerCase();
+  const role = normalizeWhitespace(row[roleKey]).toLowerCase();
+
+  if (jurisdiction.includes('school')) {
+    if (role.includes('elected')) return 'School Board Member';
+    if (role === 'public employee') return 'Superintendent';
+  }
+
+  return '';
+}
+
 function normalizeElectionDate(value) {
   if (value === null || value === undefined || value === '') {
     return '';
@@ -160,9 +175,7 @@ preparedRows = sourceRows.map((row, index) => ({
   __name: normalizeWhitespace(row[nameKey]),
   __jurisdiction: normalizeWhitespace(row[jurisdictionKey]),
   __role: normalizeWhitespace(row[roleKey]),
-  __office: officeKey
-    ? normalizeWhitespace(row[officeKey])
-    : '',
+  __office: inferOffice(row, officeKey, jurisdictionKey, roleKey),
   __electionDate: electionDateKey
     ? normalizeElectionDate(row[electionDateKey])
     : "",
