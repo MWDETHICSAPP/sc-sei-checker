@@ -79,6 +79,13 @@ function normalizeWhitespace(value) {
   return String(value ?? '').trim().replace(/\s+/g, ' ');
 }
 
+function normalizeHeader(value) {
+  return normalizeWhitespace(value)
+    .replace(/^\uFEFF/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 function normalizeElectionDate(value) {
   if (value === null || value === undefined || value === '') {
     return '';
@@ -139,15 +146,11 @@ $('prepareBtn').addEventListener('click', async () => {
     key => normalizeWhitespace(key).toLowerCase() === 'election date'
   );
 
-  const officeKey = Object.keys(sourceRows[0] || {}).find(
-    key => [
-      'office',
-      'position',
-      'title',
-      'office / position',
-      'office/position'
-    ].includes(normalizeWhitespace(key).toLowerCase())
-  );
+  const officeHeaders = Object.keys(sourceRows[0] || {});
+  const officeKey =
+    officeHeaders.find(key => normalizeHeader(key) === 'officeposition') ||
+    officeHeaders.find(key => ['office', 'position', 'title'].includes(normalizeHeader(key))) ||
+    officeHeaders.find(key => /office|position/.test(normalizeHeader(key)));
 
   const year = Number($('yearInput').value) || 2026;
 
