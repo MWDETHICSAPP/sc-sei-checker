@@ -41,6 +41,56 @@ function normalizeSchoolJurisdiction(value) {
     .trim();
 }
 
+function getEthicsProfileFirstOfficeYear({
+  campaignProfile,
+  jurisdiction,
+  office
+}) {
+  const positions = Array.isArray(campaignProfile?.allPositions)
+    ? campaignProfile.allPositions
+    : [];
+  const requestedJurisdiction = normalizeText(jurisdiction);
+  const requestedOffice = normalizeText(office);
+  const schoolJurisdiction = requestedJurisdiction.includes("school");
+
+  const matchingYears = positions
+    .filter((position) => {
+      const positionType = normalizeText(position?.positionType);
+
+      if (!["candidate", "elected"].includes(positionType)) {
+        return false;
+      }
+
+      const profileEntity = normalizeText(position?.entity);
+      const jurisdictionMatches = schoolJurisdiction
+        ? normalizeSchoolJurisdiction(profileEntity) ===
+          normalizeSchoolJurisdiction(requestedJurisdiction)
+        : profileEntity === requestedJurisdiction;
+
+      if (!jurisdictionMatches) {
+        return false;
+      }
+
+      if (!requestedOffice) {
+        return true;
+      }
+
+      const profilePosition = normalizeText(position?.position);
+
+      return (
+        profilePosition &&
+        (requestedOffice.includes(profilePosition) ||
+          profilePosition.includes(requestedOffice))
+      );
+    })
+    .map((position) => Number(position?.reportYear))
+    .filter((reportYear) => Number.isInteger(reportYear));
+
+  return matchingYears.length > 0
+    ? Math.min(...matchingYears)
+    : null;
+}
+
 function buildFilingUrl() {
   return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
 }
@@ -744,7 +794,23 @@ if (relevantOfficeYears.length > 0) {
       error.message
     );
   }
-} 
+}
+
+if (isElectedOfficial && firstWinningYearForOffice === null) {
+  firstWinningYearForOffice = getEthicsProfileFirstOfficeYear({
+    campaignProfile: campaignCompliance?.campaignProfile,
+    jurisdiction: normalized.jurisdiction,
+    office: normalized.office
+  });
+}
+
+console.log(
+  "SEI OFFICE TENURE:",
+  JSON.stringify({
+    name: normalized.name,
+    firstRequiredYearForOffice: firstWinningYearForOffice
+  })
+);
 
 for (const seiYear of seiYears) {
   const requiresSeiForYear =
@@ -951,4 +1017,7 @@ const uniqueFilerNames = [
   };  
 }
 
-module.exports = { checkPerson };
+module.exports = {
+  checkPerson,
+  getEthicsProfileFirstOfficeYear
+};
