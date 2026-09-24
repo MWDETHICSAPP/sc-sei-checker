@@ -1,5 +1,5 @@
-const CACHE = 'sei-checker-v5';
-const ASSETS = ['./', './index.html', './styles.css', './app.js?v=20260924-1', './manifest.webmanifest'];
+const CACHE = 'sei-checker-v6';
+const ASSETS = ['./', './index.html', './styles.css', './app.js?v=20260924-2', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
