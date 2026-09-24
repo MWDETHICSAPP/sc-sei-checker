@@ -493,10 +493,13 @@ const searchCampaignYear = async (electionYear) => {
 };
 
 const electionYearsToSearch = [
-  uploadedElectionYear || reportingYear,
-  ...(uploadedElectionYear && uploadedElectionYear !== reportingYear
-    ? [reportingYear]
-    : [])
+  ...new Set([
+    reportingYear - 3,
+    reportingYear - 2,
+    reportingYear - 1,
+    reportingYear,
+    ...(uploadedElectionYear ? [uploadedElectionYear] : [])
+  ])
 ];
 
 const reportLists = [];
@@ -913,8 +916,7 @@ const electionYear =
     ? electionDate.getFullYear()
     : null;
 
- const electionRelatedReports = electionYear
-  ? relevantReports.filter((report) => {
+ const electionRelatedReports = relevantReports.filter((report) => {
       const reportName = String(report?.reportName || "").toLowerCase();
       const electionYearText = String(electionYear);
 
@@ -932,9 +934,8 @@ const matchesElectionYear =
   reportName.includes(electionYearText) ||
   reportElectionYear === electionYearText;
 
-      return isElectionRelated && matchesElectionYear;
-    })
-  : [];
+      return isElectionRelated && (!electionYear || matchesElectionYear);
+    });
 console.log(
   "LOTT ELECTION-RELATED REPORTS:",
   JSON.stringify(
@@ -1024,7 +1025,7 @@ console.log(
   })
 );
   const campaignDeficiencies = [];
-if (electionYear && hasPreElectionReport) {
+if (hasPreElectionReport) {
  const preElectionReportsForElection = electionRelatedReports.filter((report) =>
     String(report?.reportName || "")
       .toLowerCase()
