@@ -116,6 +116,22 @@ function getPartisanCandidateYearsFromHistory(history, office) {
     .filter(Number.isInteger));
 }
 
+function selectSeiMatchesForPerson(name, matches) {
+  const requested = normalizeText(name).split(" ").filter(Boolean);
+  if (requested.length < 2 || requested[0].length < 2) return matches;
+
+  const first = requested[0];
+  const last = requested[requested.length - 1];
+  const matching = matches.filter((match) => {
+    const filer = normalizeText(match?.filerName).split(" ").filter(Boolean);
+    return filer.length >= 2 && filer[0] === first &&
+      filer[filer.length - 1] === last;
+  });
+
+  // An absent full-name match is uncertain, not evidence of a missing filing.
+  return matching.length > 0 ? matching : matches;
+}
+
 function buildFilingUrl() {
   return "https://ethicsfiling.sc.gov/public/statement-economic-interests";
 }
@@ -654,7 +670,7 @@ const searchResult = await searchPublicSei({
     };
   }
 
-  const matches = searchResult.matches;
+  const matches = selectSeiMatchesForPerson(normalized.name, searchResult.matches);
   const seiDeficiencies = [];
 console.log(
   "SEI MATCH DEBUG",
@@ -1033,10 +1049,10 @@ const uniqueFilerNames = [
         Number(match.percentageAccuracy || 0)
       )
     ),
-    matchedFilingName: matches
-      .slice(0, 3)
+    matchedFilingName: [...new Set(matches
       .map((match) => match.filerName)
-      .filter(Boolean)
+      .filter(Boolean))]
+      .slice(0, 3)
       .join("; "),
     filingUrl: buildFilingUrl(),
     notes:
@@ -1052,5 +1068,6 @@ module.exports = {
   checkPerson,
   getEthicsProfileFirstOfficeYear,
   requiresSeiForYear,
-  getPartisanCandidateYearsFromHistory
+  getPartisanCandidateYearsFromHistory,
+  selectSeiMatchesForPerson
 };
