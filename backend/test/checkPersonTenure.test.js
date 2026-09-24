@@ -3,10 +3,11 @@ const assert = require("node:assert/strict");
 
 const {
   getEthicsProfileFirstOfficeYear,
-  requiresSeiForYear
+  requiresSeiForYear,
+  getPartisanCandidateYearsFromHistory
 } = require("../src/services/checkPerson");
 
-test("uses the matching Ethics candidate year when SC Votes has no winner", () => {
+test("candidate year does not stand in for first elected year", () => {
   const year = getEthicsProfileFirstOfficeYear({
     jurisdiction: "Lexington County",
     office: "Lexington County Council District 1",
@@ -34,7 +35,7 @@ test("uses the matching Ethics candidate year when SC Votes has no winner", () =
     }
   });
 
-  assert.equal(year, 2024);
+  assert.equal(year, 2026);
 });
 
 test("does not use an unrelated office in the same filer profile", () => {
@@ -59,7 +60,29 @@ test("does not use an unrelated office in the same filer profile", () => {
     }
   });
 
-  assert.equal(year, 2024);
+  assert.equal(year, null);
+});
+
+test("SC Votes partisan primary establishes the candidate SEI year for the matching office", () => {
+  const history = { contests: [
+    { year: 2024, contest: { division: { displayName: "Richland County Council District 3" }, eventTypeDisplayName: "Democratic Primary" } },
+    { year: 2022, contest: { division: { displayName: "Richland County Council District 4" }, eventTypeDisplayName: "Republican Primary" } },
+    { year: 2020, contest: { division: { displayName: "Richland County Council District 3" }, eventTypeDisplayName: "General" } }
+  ] };
+  assert.deepEqual([...getPartisanCandidateYearsFromHistory(history, "Richland County Council District 3")], [2024]);
+});
+
+test("uses elected term start rather than the SEI report year", () => {
+  const year = getEthicsProfileFirstOfficeYear({
+    jurisdiction: "Richland County", office: "Richland County Council District 3",
+    campaignProfile: { allPositions: [
+      { reportYear: "2026", startYear: "2025", position: "County Council",
+        entity: "Richland County", positionType: "Elected" },
+      { reportYear: "2024", startYear: "2025", position: "County Council",
+        entity: "Richland County", positionType: "Candidate" }
+    ] }
+  });
+  assert.equal(year, 2025);
 });
 
 test("normalizes school district jurisdiction names", () => {
