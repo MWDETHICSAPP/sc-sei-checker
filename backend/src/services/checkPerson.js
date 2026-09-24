@@ -57,7 +57,7 @@ function getEthicsProfileFirstOfficeYear({
     .filter((position) => {
       const positionType = normalizeText(position?.positionType);
 
-      if (!["candidate", "elected"].includes(positionType)) {
+      if (positionType !== "elected") {
         return false;
       }
 
@@ -77,18 +77,43 @@ function getEthicsProfileFirstOfficeYear({
 
       const profilePosition = normalizeText(position?.position);
 
+      const schoolBoardAlias = schoolJurisdiction &&
+        /\b(school board|trustee)\b/.test(requestedOffice) &&
+        /\b(school board|trustee)\b/.test(profilePosition);
+
       return (
-        profilePosition &&
+        schoolBoardAlias || (profilePosition &&
         (requestedOffice.includes(profilePosition) ||
-          profilePosition.includes(requestedOffice))
+          profilePosition.includes(requestedOffice)))
       );
     })
-    .map((position) => Number(position?.reportYear))
+    .map((position) => Number(position?.startYear || position?.reportYear))
     .filter((reportYear) => Number.isInteger(reportYear));
 
   return matchingYears.length > 0
     ? Math.min(...matchingYears)
     : null;
+}
+
+function requiresSeiForYear({ seiYear, isElectedOfficial, firstWinningYearForOffice,
+  historicalPartisanCandidateYears, isCandidate, candidateRequiresSei,
+  candidateElectionYear }) {
+  return (isElectedOfficial && firstWinningYearForOffice !== null &&
+    seiYear >= firstWinningYearForOffice) ||
+    historicalPartisanCandidateYears.has(seiYear) ||
+    (isCandidate && candidateRequiresSei && candidateElectionYear === seiYear);
+}
+
+function getPartisanCandidateYearsFromHistory(history, office) {
+  const requestedOffice = normalizeText(office);
+  return new Set((history?.contests || [])
+    .filter((entry) =>
+      requestedOffice &&
+      normalizeText(entry?.contest?.division?.displayName) === requestedOffice &&
+      /\b(democratic|republican) primary\b/i.test(
+        String(entry?.contest?.eventTypeDisplayName || "")))
+    .map((entry) => Number(entry?.year))
+    .filter(Number.isInteger));
 }
 
 function buildFilingUrl() {
@@ -721,8 +746,9 @@ const candidateRequiresSei =
   );
 
 let firstWinningYearForOffice = null;
+let partisanCandidateYearsFromHistory = new Set();
 
-if (isElectedOfficial) {
+if (isElectedOfficial || isCandidate) {
   try {
     const candidateSearchResults = await searchCandidates(normalized.name);
 
@@ -730,6 +756,8 @@ if (isElectedOfficial) {
 
     if (candidateId) {
      const candidateHistory = await getCandidateHistory(candidateId);
+     partisanCandidateYearsFromHistory =
+       getPartisanCandidateYearsFromHistory(candidateHistory, normalized.office);
 
 console.log(
   "SC VOTES CANDIDATE HISTORY:",
@@ -784,7 +812,7 @@ const relevantOfficeYears = (candidateHistory?.contests || [])
   .map((contestEntry) => Number(contestEntry.year))
   .filter((contestYear) => Number.isInteger(contestYear));
 
-if (relevantOfficeYears.length > 0) {
+if (isElectedOfficial && relevantOfficeYears.length > 0) {
   firstWinningYearForOffice = Math.min(...relevantOfficeYears);
 }
     }
@@ -804,6 +832,13 @@ if (isElectedOfficial && firstWinningYearForOffice === null) {
   });
 }
 
+const officeTenureNeedsReview =
+  isElectedOfficial && firstWinningYearForOffice === null;
+
+for (const candidateYear of partisanCandidateYearsFromHistory) {
+  historicalPartisanCandidateYears.add(candidateYear);
+}
+
 console.log(
   "SEI OFFICE TENURE:",
   JSON.stringify({
@@ -813,19 +848,9 @@ console.log(
 );
 
 for (const seiYear of seiYears) {
-  const requiresSeiForYear =
-  (
-    isElectedOfficial &&
-    (
-      firstWinningYearForOffice === null ||
-      seiYear >= firstWinningYearForOffice
-    )
-  ) ||
-  (
-    isCandidate &&
-    candidateRequiresSei &&
-    candidateElectionYear === seiYear
-  );
+  const required = requiresSeiForYear({ seiYear, isElectedOfficial,
+    firstWinningYearForOffice, historicalPartisanCandidateYears,
+    isCandidate, candidateRequiresSei, candidateElectionYear });
 
  const asCandidate =
   historicalPartisanCandidateYears.has(seiYear) &&
@@ -834,7 +859,7 @@ for (const seiYear of seiYears) {
     firstWinningYearForOffice === null ||
     seiYear <= firstWinningYearForOffice
   );
-  if (!requiresSeiForYear) {
+  if (!required) {
     continue;
   }
   const seiMatch = matchesByYear.get(seiYear);
@@ -910,7 +935,7 @@ const isNonpartisanWinningYear =
         surname,
         adapter: "sc-ethics-public-api"
       },
-      status: "Not Filed",
+      status: officeTenureNeedsReview ? "Manual Review" : "Not Filed",
       confidence: 1,
       matchedFilingName: "",
       filingUrl: "",
@@ -930,7 +955,9 @@ if (matches.length === 0 && seiDeficiencies.length === 0) {
       adapter: "sc-ethics-public-api"
     },
     status:
-      campaignDeficiencies.length > 0
+      officeTenureNeedsReview
+        ? "Manual Review"
+        : campaignDeficiencies.length > 0
         ? "Not Filed"
         : "Filed",
     confidence: 1,
@@ -938,7 +965,9 @@ if (matches.length === 0 && seiDeficiencies.length === 0) {
     filedDate: "",
     filingUrl: "",
     notes:
-      candidateParty === "nonpartisan"
+      officeTenureNeedsReview
+        ? "The first year in this office could not be confirmed. Review SEI obligations manually."
+        : candidateParty === "nonpartisan"
         ? `No ${year} SEI was required because the candidate was not elected in the nonpartisan race.`
         : `No ${year} SEI deficiency was assessed.`
   };
@@ -951,15 +980,15 @@ if (matches.length === 0 && seiDeficiencies.length === 0) {
       input: normalized,
       campaignCompliance,
       seiMatches: matches,
-      deficiencies: campaignDeficiencies,
+      deficiencies: [...seiDeficiencies, ...campaignDeficiencies],
       search: {
         surname,
         adapter: "sc-ethics-public-api"
       },
-      status:
-  campaignDeficiencies.length > 0
-    ? "Not Filed"
-    : "Filed",
+      status: officeTenureNeedsReview
+        ? "Manual Review"
+        : seiDeficiencies.length > 0 || campaignDeficiencies.length > 0
+          ? "Not Filed" : "Filed",
       confidence: Number(
         match.percentageAccuracy || 1
       ),
@@ -994,7 +1023,7 @@ const uniqueFilerNames = [
       adapter: "sc-ethics-public-api"
     },
    status:
-  uniqueFilerNames.length > 1
+  uniqueFilerNames.length > 1 || officeTenureNeedsReview
     ? "Manual Review"
     : seiDeficiencies.length > 0 || campaignDeficiencies.length > 0
       ? "Not Filed"
@@ -1013,11 +1042,15 @@ const uniqueFilerNames = [
     notes:
   uniqueFilerNames.length > 1
     ? `${uniqueFilerNames.length} possible filers were found. Confirm the filer manually.`
+    : officeTenureNeedsReview
+      ? "The first year in this office could not be confirmed. Review SEI obligations manually."
     : `${matches.length} SEI reports found for the matched filer.`
   };  
 }
 
 module.exports = {
   checkPerson,
-  getEthicsProfileFirstOfficeYear
+  getEthicsProfileFirstOfficeYear,
+  requiresSeiForYear,
+  getPartisanCandidateYearsFromHistory
 };

@@ -385,6 +385,7 @@ function renderRows(rows) {
       applyStatusClass(tr, row.__status);
       updateStats();
       persist();
+      renderRows(preparedRows);
     });
 
     match.addEventListener('input', () => {
@@ -398,6 +399,7 @@ function renderRows(rows) {
     });
 
   if (
+  row.__status !== 'Manual Review' &&
   Array.isArray(row.__deficiencies) &&
   row.__deficiencies.length > 0
 ) {
@@ -458,9 +460,9 @@ function updateStats() {
 $('notFiledCount').textContent = preparedRows.reduce(
   (total, row) =>
     total +
-    (Array.isArray(row.__deficiencies)
-      ? row.__deficiencies.length
-      : 0),
+    (row.__status === 'Not Filed' ||
+    (Array.isArray(row.__deficiencies) && row.__deficiencies.length > 0)
+      ? 1 : 0),
   0
 );
 }
@@ -1115,6 +1117,7 @@ if (generateLettersBtn) {
   generateLettersBtn.addEventListener('click', async () => {
     const letterRows = preparedRows.filter(
   (row) =>
+    row.__status !== 'Manual Review' &&
     Array.isArray(row.__deficiencies) &&
     row.__deficiencies.length > 0
 );
