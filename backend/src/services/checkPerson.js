@@ -61,6 +61,11 @@ function getEthicsProfileFirstOfficeYear({
         return false;
       }
 
+      // Nonpartisan school-board candidacy alone does not establish SEI tenure.
+      if (schoolJurisdiction && positionType !== "elected") {
+        return false;
+      }
+
       const profileEntity = normalizeText(position?.entity);
       const jurisdictionMatches = schoolJurisdiction
         ? normalizeSchoolJurisdiction(profileEntity) ===
@@ -77,10 +82,14 @@ function getEthicsProfileFirstOfficeYear({
 
       const profilePosition = normalizeText(position?.position);
 
+      const schoolBoardAlias = schoolJurisdiction &&
+        /\b(school board|trustee)\b/.test(requestedOffice) &&
+        /\b(school board|trustee)\b/.test(profilePosition);
+
       return (
-        profilePosition &&
+        schoolBoardAlias || (profilePosition &&
         (requestedOffice.includes(profilePosition) ||
-          profilePosition.includes(requestedOffice))
+          profilePosition.includes(requestedOffice)))
       );
     })
     .map((position) => Number(position?.reportYear))
