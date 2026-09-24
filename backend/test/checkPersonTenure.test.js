@@ -98,3 +98,26 @@ test("returns null when no profile position matches the requested office", () =>
 
   assert.equal(year, null);
 });
+
+test("matches the trustee spreadsheet title to the elected school board position", () => {
+  const year = getEthicsProfileFirstOfficeYear({
+    jurisdiction: "Richland County School 2",
+    office: "School Board Trustee District RICHLAND #2",
+    campaignProfile: { allPositions: [
+      { reportYear: "2022", position: "School Board Member", entity: "Richland School District 2", positionType: "Candidate" },
+      { reportYear: "2024", position: "School Board Member", entity: "Richland School District 2", positionType: "Elected" }
+    ] }
+  });
+  assert.equal(year, 2024);
+});
+
+test("does not start school-board tenure from a losing candidacy", () => {
+  const year = getEthicsProfileFirstOfficeYear({
+    jurisdiction: "Richland County School 2",
+    office: "School Board Trustee District RICHLAND #2",
+    campaignProfile: { allPositions: [
+      { reportYear: "2022", position: "School Board Member", entity: "Richland County School 2", positionType: "Candidate" }
+    ] }
+  });
+  assert.equal(year, null);
+});
