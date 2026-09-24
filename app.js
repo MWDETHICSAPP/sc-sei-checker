@@ -458,9 +458,9 @@ function updateStats() {
 $('notFiledCount').textContent = preparedRows.reduce(
   (total, row) =>
     total +
-    (Array.isArray(row.__deficiencies)
-      ? row.__deficiencies.length
-      : 0),
+    (row.__status === 'Not Filed' ||
+    (Array.isArray(row.__deficiencies) && row.__deficiencies.length > 0)
+      ? 1 : 0),
   0
 );
 }
