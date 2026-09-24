@@ -4,7 +4,8 @@ const assert = require("node:assert/strict");
 const {
   getEthicsProfileFirstOfficeYear,
   requiresSeiForYear,
-  getPartisanCandidateYearsFromHistory
+  getPartisanCandidateYearsFromHistory,
+  selectSeiMatchesForPerson
 } = require("../src/services/checkPerson");
 
 test("candidate year does not stand in for first elected year", () => {
@@ -160,4 +161,15 @@ test("confirmed elected tenure requires annual SEIs from election year onward", 
     isCandidate: false, candidateRequiresSei: false, candidateElectionYear: null };
   assert.equal(requiresSeiForYear({ ...basis, seiYear: 2023 }), false);
   assert.equal(requiresSeiForYear({ ...basis, seiYear: 2025 }), true);
+});
+
+test("full first and last name exclude another filer with the same surname", () => {
+  const reports = [
+    { filerName: "Alice W. Morgan", reportYear: 2025 },
+    { filerName: "Beth Morgan", reportYear: 2025 },
+    { filerName: "Alice W. Morgan", reportYear: 2024 }
+  ];
+  assert.deepEqual(selectSeiMatchesForPerson("Alice Morgan", reports),
+    [reports[0], reports[2]]);
+  assert.deepEqual(selectSeiMatchesForPerson("A Morgan", reports), reports);
 });
