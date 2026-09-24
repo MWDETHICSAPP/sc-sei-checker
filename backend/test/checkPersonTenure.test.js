@@ -2,7 +2,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
-  getEthicsProfileFirstOfficeYear
+  getEthicsProfileFirstOfficeYear,
+  requiresSeiForYear
 } = require("../src/services/checkPerson");
 
 test("uses the matching Ethics candidate year when SC Votes has no winner", () => {
@@ -120,4 +121,20 @@ test("does not start school-board tenure from a losing candidacy", () => {
     ] }
   });
   assert.equal(year, null);
+});
+
+test("unknown elected tenure does not invent earlier annual SEI obligations", () => {
+  const basis = { isElectedOfficial: true, firstWinningYearForOffice: null,
+    historicalPartisanCandidateYears: new Set([2024]),
+    isCandidate: false, candidateRequiresSei: false, candidateElectionYear: null };
+  assert.equal(requiresSeiForYear({ ...basis, seiYear: 2023 }), false);
+  assert.equal(requiresSeiForYear({ ...basis, seiYear: 2024 }), true);
+});
+
+test("confirmed elected tenure requires annual SEIs from election year onward", () => {
+  const basis = { isElectedOfficial: true, firstWinningYearForOffice: 2024,
+    historicalPartisanCandidateYears: new Set(),
+    isCandidate: false, candidateRequiresSei: false, candidateElectionYear: null };
+  assert.equal(requiresSeiForYear({ ...basis, seiYear: 2023 }), false);
+  assert.equal(requiresSeiForYear({ ...basis, seiYear: 2025 }), true);
 });
