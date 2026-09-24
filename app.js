@@ -314,7 +314,7 @@ row.__candidateAddress =
 
 if (row.__deficiencies.length > 0) {
   row.__notes =
-    'Deficiencies: ' +
+    (result.notes ? `${result.notes} ` : '') + 'Deficiencies: ' +
     row.__deficiencies
       .map((deficiency) => {
         const filing = String(deficiency?.filing || '').trim();
@@ -485,6 +485,7 @@ $('exportBtn').addEventListener('click', () => {
     clean['Review Status'] = row.__status;
 clean['Manual Review Required'] = row.__status === 'Manual Review' ? 'Yes' : 'No';
 clean['Letter Required'] =
+  row.__status !== 'Manual Review' &&
   Array.isArray(row.__deficiencies) && row.__deficiencies.length > 0
     ? 'Yes'
     : 'No';const campaignDeficiencies = Array.isArray(row.__deficiencies)
