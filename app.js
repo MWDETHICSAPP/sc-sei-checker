@@ -195,7 +195,10 @@ preparedRows = sourceRows.map((row, index) => ({
   button.textContent = 'Checking…';
 
   try {
-    await runBackendChecks(year);
+    const failedCount = await runBackendChecks(year);
+    if (failedCount) {
+      alert(`${failedCount} candidate${failedCount === 1 ? '' : 's'} could not be checked. Those rows are marked Manual Review with the request error in Notes.`);
+    }
   } catch (error) {
     preparedRows.forEach((row) => {
       if (row.__status === 'Pending') {
@@ -215,9 +218,10 @@ preparedRows = sourceRows.map((row, index) => ({
 });
 
 async function runBackendChecks(year) {
-  const batchSize = 250;
+  const batchSize = 10;
   const totalBatches = Math.ceil(preparedRows.length / batchSize);
   const button = $('prepareBtn');
+  let failedCount = 0;
 
   for (let start = 0; start < preparedRows.length; start += batchSize) {
     const batchNumber = Math.floor(start / batchSize) + 1;
@@ -249,42 +253,16 @@ const people = validRows.map((row) => ({
   electionDate: row.__electionDate || null
 }));
 
-    const response = await fetch(`${API_BASE_URL}/check-batch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ people, year })
-    });
-
-    let payload;
-
-    try {
-      payload = await response.json();
-    } catch (_) {
-      throw new Error(
-        `The server returned an unreadable response for batch ${batchNumber} (${response.status}).`
-      );
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        payload.error ||
-          `The server returned status ${response.status} for batch ${batchNumber}.`
-      );
-    }
-
-    if (
-      !Array.isArray(payload.results) ||
-      payload.results.length !== validRows.length
-    ) {
-      throw new Error(
-        `The server returned an incomplete response for batch ${batchNumber}.`
-      );
-    }
-
-    payload.results.forEach((result, index) => {
+    const results = await checkBatchWithFallback(people, year);
+    results.forEach((result, index) => {
       const row = validRows[index];
+
+      if (result.__requestError) {
+        failedCount++;
+        row.__status = 'Manual Review';
+        row.__notes = `Check failed: ${result.__requestError}`;
+        return;
+      }
 
       row.__status = result.status || 'Manual Review';
       row.__surname = result.search?.surname || row.__surname;
@@ -354,6 +332,46 @@ if (row.__deficiencies.length > 0) {
     renderRows(preparedRows);
     updateStats();
     persist();
+  }
+  return failedCount;
+}
+
+async function requestChecks(people, year) {
+  const response = await fetch(`${API_BASE_URL}/check-batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ people, year })
+  });
+  let payload;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    throw new Error(`Unreadable server response (HTTP ${response.status}).`);
+  }
+  if (!response.ok) {
+    throw new Error(payload.error || `Server returned HTTP ${response.status}.`);
+  }
+  if (!Array.isArray(payload.results) || payload.results.length !== people.length) {
+    throw new Error('Incomplete server response.');
+  }
+  return payload.results;
+}
+
+async function checkBatchWithFallback(people, year) {
+  try {
+    return await requestChecks(people, year);
+  } catch (error) {
+    if (people.length === 1) {
+      try {
+        return await requestChecks(people, year);
+      } catch (retryError) {
+        return [{ __requestError: retryError.message || String(retryError) }];
+      }
+    }
+    const middle = Math.floor(people.length / 2);
+    const left = await checkBatchWithFallback(people.slice(0, middle), year);
+    const right = await checkBatchWithFallback(people.slice(middle), year);
+    return [...left, ...right];
   }
 }
 
